@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <title>赠岛</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E4E9ED'/%3E%3Cpath d='M18 26h28v12H18z' fill='%231D1D1F'/%3E%3Ccircle cx='20' cy='32' r='12' fill='%231D1D1F'/%3E%3Ccircle cx='44' cy='32' r='12' fill='%231D1D1F'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <section class="view home" id="view-home" hidden>
+    <main class="home-inner">
+      <h1 class="home-title rise" style="--i: 0">赠岛</h1>
+      <p class="home-lede rise" style="--i: 1">每一手，一枚给自己，一枚送对方。<br>岛多的一方获胜。</p>
+      <div class="home-ctas rise" style="--i: 2">
+        <button type="button" class="cta" id="home-play">开始对局</button>
+        <button type="button" class="link" id="home-learn"><span>两分钟学会规则</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button>
+      </div>
+      <p class="home-meta rise" id="home-meta" style="--i: 3" hidden>
+        <span id="home-meta-text"></span>
+        <button type="button" class="link small" id="home-new">新对局</button>
+      </p>
+      <div class="hero rise" style="--i: 3">
+        <div class="board demo" id="hero-board" aria-hidden="true"><svg></svg></div>
+      </div>
+    </main>
+  </section>
+
+  <section class="view learn" id="view-learn" hidden>
+    <header class="learn-bar">
+      <button class="icon-btn" id="learn-close" type="button" aria-label="关闭教程" title="关闭（Esc）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>
+      </button>
+      <nav class="progress" id="learn-progress" aria-label="课程进度"></nav>
+      <span aria-hidden="true"></span>
+    </header>
+    <main class="lesson">
+      <div class="lesson-text">
+        <h2 id="lesson-title"></h2>
+        <p id="lesson-body"></p>
+      </div>
+      <div class="lesson-stage" id="lesson-stage"></div>
+      <p class="lesson-feedback" id="lesson-feedback" aria-live="polite"></p>
+      <div class="lesson-actions">
+        <button type="button" class="btn secondary" id="lesson-retry" hidden>再试一次</button>
+        <button type="button" class="btn primary" id="lesson-next" disabled>继续</button>
+      </div>
+    </main>
+  </section>
+
+  <div class="view play" id="view-play" hidden>
+  <header class="bar">
+    <button class="wordmark" id="to-home" type="button" aria-label="返回首页" title="返回首页">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg><span>赠岛</span>
+    </button>
+    <div class="actions">
+      <button class="icon-btn" id="to-learn" type="button" aria-label="学习规则" title="学习规则">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.85.85c0 1.7-2.45 2.15-2.45 3.75"/><path d="M12 17.2v.1"/></svg>
+      </button>
+      <button class="icon-btn" id="undo" type="button" aria-label="悔棋" title="悔棋（⌘Z）" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      </button>
+      <button class="pill" id="new" type="button">新对局</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="banner" id="banner" role="status" hidden>
+      <span id="banner-text"></span>
+      <button type="button" id="banner-action">重试</button>
+    </div>
+
+    <section class="scoreboard" aria-label="比分">
+      <div class="side" id="side-1" data-color="1">
+        <div class="who"><span class="chip" data-color="1"></span><span class="name" id="name-1">你</span></div>
+        <div class="score"><span class="num" id="score-1">0</span><span class="unit">岛</span><span class="delta" id="delta-1"></span></div>
+      </div>
+      <div class="clock">
+        <div class="moves"><span id="move-no">0</span><span class="of">/ 40 手</span></div>
+        <div class="balance" id="balance" hidden title="AI 对局势的估计，不是胜率"><i></i></div>
+      </div>
+      <div class="side right" id="side-2" data-color="2">
+        <div class="who"><span class="name" id="name-2">进阶</span><span class="chip" data-color="2"></span></div>
+        <div class="score"><span class="delta" id="delta-2"></span><span class="num" id="score-2">0</span><span class="unit">岛</span></div>
+      </div>
+    </section>
+
+    <div class="board" id="board" tabindex="0" role="application"
+         aria-label="棋盘。方向键移动，空格或回车落子，Esc 取消。" aria-describedby="hint">
+      <svg id="svg" viewBox="0 0 900 900" aria-hidden="true"></svg>
+    </div>
+
+    <p class="hint" id="hint"></p>
+  </main>
+
+  </div>
+
+  <div class="sr-only" id="announce" aria-live="polite"></div>
+
+  <dialog id="setup" aria-labelledby="setup-title">
+    <form method="dialog" id="setup-form">
+      <h2 id="setup-title" tabindex="-1" autofocus>新对局</h2>
+      <p class="rules">每一手同时落两枚子：一枚给自己，一枚送给对方。相连的同色棋子是一座岛，棋盘只剩一个空格时，岛多的一方获胜。
+        <button type="button" class="link small" id="setup-learn"><span>手把手学一遍</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button>
+      </p>
+
+      <div class="field">
+        <span class="label" id="lbl-opponent">对手</span>
+        <div class="seg" role="radiogroup" aria-labelledby="lbl-opponent">
+          <label><input type="radio" name="opponent" value="level1"><span>入门</span></label>
+          <label><input type="radio" name="opponent" value="level2"><span>初级</span></label>
+          <label><input type="radio" name="opponent" value="level3"><span>进阶</span></label>
+          <label><input type="radio" name="opponent" value="best"><span>最强</span></label>
+          <label><input type="radio" name="opponent" value="human"><span>双人</span></label>
+          <i class="seg-thumb" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="collapse" id="ai-fields">
+        <div class="collapse-inner">
+          <div class="field">
+            <span class="label" id="lbl-color">你执</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lbl-color">
+              <label><input type="radio" name="color" value="1"><span>黑子先行</span></label>
+              <label><input type="radio" name="color" value="2"><span>白子后行</span></label>
+              <i class="seg-thumb" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label" id="lbl-think">AI 思考</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lbl-think">
+              <label><input type="radio" name="think" value="fast"><span>快</span></label>
+              <label><input type="radio" name="think" value="normal"><span>标准</span></label>
+              <label><input type="radio" name="think" value="deep"><span>深入</span></label>
+              <i class="seg-thumb" aria-hidden="true"></i>
+            </div>
+            <p class="note" id="think-note"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button type="button" class="btn secondary" id="setup-cancel">取消</button>
+        <button type="submit" class="btn primary" id="setup-start">开始对局</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="result" aria-labelledby="result-title">
+    <div class="result-body">
+      <h2 id="result-title" tabindex="-1" autofocus>你赢了</h2>
+      <p class="final" id="result-score"></p>
+      <div class="buttons">
+        <button type="button" class="btn secondary" id="result-board">查看棋盘</button>
+        <button type="button" class="btn primary" id="result-again">再来一局</button>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>
