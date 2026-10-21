@@ -3,6 +3,8 @@ import * as rules from "./rules.js";
 import { createBoardView, bindBoardInput, focusCell } from "./board-view.js";
 import { createHome } from "./home.js";
 import { createLearn, hasLearned } from "./learn.js";
+import { createEgg } from "./egg.js";
+import { sealRecord, recordWin } from "./seal.js";
 
 // ---------- Constants ----------
 
@@ -468,9 +470,12 @@ function syncSegments() {
   $("#think-note").textContent = THINK_NOTES[form.get("think")] ?? "";
 }
 
-/** `suggest` preselects an opponent for someone who has never set up a game. */
-function openSetup({ suggest = null } = {}) {
-  setupForm.elements.opponent.value = suggest && !hasSavedGame ? suggest : settings.opponent;
+/**
+ * `suggest` preselects an opponent for someone who has never set up a game;
+ * `opponent` preselects one regardless.
+ */
+function openSetup({ suggest = null, opponent = null } = {}) {
+  setupForm.elements.opponent.value = opponent ?? (suggest && !hasSavedGame ? suggest : settings.opponent);
   setupForm.elements.color.value = String(settings.humanColor);
   setupForm.elements.think.value = settings.think;
   syncSegments();
@@ -606,12 +611,13 @@ function resumeTurn() {
   if (!pos.terminal && vsAI() && pos.player === aiColor()) aiTurn();
 }
 
-// ---------- Views: home, learn, play ----------
+// ---------- Views: home, learn, play, and the easter egg ----------
 
-const views = { home: $("#view-home"), learn: $("#view-learn"), play: $("#view-play") };
-const TITLES = { home: "赠岛", learn: "学习规则 · 赠岛", play: "对局 · 赠岛" };
+const views = { home: $("#view-home"), learn: $("#view-learn"), play: $("#view-play"), egg: $("#view-egg") };
+const TITLES = { home: "赠岛", learn: "学习规则 · 赠岛", play: "对局 · 赠岛", egg: "岛主 · 赠岛" };
 let route = null;
 let learnReturn = "home";
+let eggFresh = false;
 
 function gameSummary() {
   const pos = position();
@@ -628,6 +634,12 @@ const home = createHome({
   onPlay: () => go("play"),
   onNew: () => openSetup(),
   onLearn: () => go("learn"),
+  onWin: (score) => {
+    recordWin(score);
+    eggFresh = true;
+    go("egg");
+  },
+  onSeal: () => go("egg"),
 });
 
 const learn = createLearn({
@@ -636,6 +648,13 @@ const learn = createLearn({
   onClose: () => go(learnReturn),
   onHome: () => go("home"),
   onFinish: () => openSetup({ suggest: "level1" }),
+});
+
+const egg = createEgg({
+  root: views.egg,
+  reducedMotion,
+  onHome: () => go("home"),
+  onPlay: () => openSetup({ opponent: "best" }),
 });
 
 const routeFromHash = () => {
@@ -650,6 +669,11 @@ function go(name) {
 }
 
 function show(name) {
+  // The egg page exists only for someone who has earned it.
+  if (name === "egg" && !sealRecord()) {
+    window.history.replaceState(null, "", "#/");
+    name = "home";
+  }
   if (name === route) return;
   const prev = route;
   route = name;
@@ -665,6 +689,10 @@ function show(name) {
     window.scrollTo(0, 0);
     if (name === "home") home.enter();
     if (name === "learn") learn.enter();
+    if (name === "egg") {
+      egg.enter({ fresh: eggFresh });
+      eggFresh = false;
+    }
     if (name === "play") {
       render();
       if (history.length === 1) playIntro();

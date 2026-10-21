@@ -1,5 +1,6 @@
 import * as rules from "./rules.js";
 import { createBoardView, bindBoardInput, focusCell } from "./board-view.js";
+import { createTally } from "./tally.js";
 
 // An interactive rules course: each lesson is a small 5×5 board with one thing to do.
 
@@ -37,39 +38,6 @@ const ICONS = {
 
 // ---------- Building blocks ----------
 
-/** Island counts for both colours, with a +1 / −1 preview of the move under the cursor. */
-function makeTally(parent) {
-  const el = document.createElement("div");
-  el.className = "tally";
-  el.innerHTML = [1, 2].map((c) => `
-    <span class="tally-side" data-color="${c}">
-      <span class="chip" data-color="${c}"></span>
-      <span class="tally-num">0</span><span class="tally-unit">岛</span>
-      <span class="delta"></span>
-    </span>`).join("");
-  parent.append(el);
-  const nums = el.querySelectorAll(".tally-num");
-  const deltas = el.querySelectorAll(".delta");
-
-  return {
-    show(real, next = null) {
-      [1, 2].forEach((c, k) => {
-        const text = String(real[c]);
-        if (nums[k].textContent !== text) {
-          nums[k].textContent = text;
-          nums[k].classList.remove("bump");
-          void nums[k].offsetWidth;
-          nums[k].classList.add("bump");
-        }
-        const d = next ? next[c] - real[c] : 0;
-        if (d !== 0) deltas[k].textContent = d > 0 ? `+${d}` : `−${-d}`;
-        deltas[k].classList.toggle("show", d !== 0);
-        deltas[k].classList.toggle("down", d < 0);
-      });
-    },
-  };
-}
-
 /**
  * A board you play one move on: pick a cell for your own stone, then one for the gift.
  * `check.self` / `check.gift` may return a sentence explaining why a choice is refused.
@@ -77,7 +45,7 @@ function makeTally(parent) {
 function playable(ctx, { start, me = 1, tally = false, check = {}, onPick, onMove }) {
   const n = sizeOf(start);
   const { view, head } = ctx.mountBoard(n);
-  const counter = tally ? makeTally(head) : null;
+  const counter = tally ? createTally(head) : null;
   const state = {
     board: start.slice(), pending: null, last: null, locked: false,
     hover: null, focus: Math.floor((n * n) / 2), keyboard: false,

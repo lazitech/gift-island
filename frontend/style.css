@@ -9,6 +9,13 @@
   --accent-ink: #FFFFFF;
   --warn: #C25E00;
 
+  /* The easter egg: vermilion seal on paper. */
+  --paper: #F3EEE5;
+  --paper-ink: #2A2320;
+  --paper-ink-2: #74685E;
+  --seal: #C23B2A;
+  --seal-shadow: 0 1px 1px rgba(80, 20, 10, 0.22), 0 18px 36px -16px rgba(110, 30, 15, 0.55);
+
   --sea: #E4E9ED;
   --sea-dot: #B8C2CA;
   --black: #1D1D1F;
@@ -29,6 +36,7 @@
 
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Display", "Inter", "PingFang SC", sans-serif;
+  --font-serif: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
 
   color-scheme: light dark;
 }
@@ -43,6 +51,12 @@
     --fill: rgba(118, 118, 128, 0.24);
     --accent: #0A84FF;
     --warn: #FF9F0A;
+
+    --paper: #13110F;
+    --paper-ink: #EEE6DA;
+    --paper-ink-2: #A3978A;
+    --seal: #CC4535;
+    --seal-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 18px 36px -14px rgba(0, 0, 0, 0.8);
 
     --sea: #2E363D;
     --sea-dot: #4F5B65;
@@ -359,7 +373,7 @@ button { font: inherit; color: inherit; }
   transition: transform 0.3s var(--ease-out), opacity 0.2s var(--ease);
 }
 .dot.off { transform: scale(0); opacity: 0; }
-.board.intro .dot { animation: dot-in 0.6s var(--ease-out) backwards; animation-delay: calc(var(--d) * 28ms); }
+.board.intro .dot { animation: dot-in 0.6s var(--ease-out) backwards; animation-delay: calc(var(--d) * var(--dot-step, 28ms)); }
 @keyframes dot-in {
   from { transform: scale(0); opacity: 0; }
 }
@@ -624,9 +638,14 @@ dialog h2:focus { outline: none; }
 @keyframes vt-in { from { opacity: 0; transform: scale(1.012); filter: blur(6px); } }
 
 /* The sea under every board morphs from one view to the next. */
-#hero-board, #board, .lesson-board .board { view-transition-name: sea; }
+#title-board, #board, .lesson-board .board, #egg-seal { view-transition-name: sea; }
 ::view-transition-group(sea) { animation-duration: 0.6s; animation-timing-function: var(--ease-out); }
-::view-transition-old(sea), ::view-transition-new(sea) { height: 100%; animation-duration: 0.45s; }
+::view-transition-old(sea), ::view-transition-new(sea) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation-duration: 0.45s;
+}
 
 .link {
   display: inline-flex;
@@ -661,25 +680,111 @@ dialog h2:focus { outline: none; }
 }
 
 .home-inner {
-  --board: max(220px, min(calc(100vw - 48px), calc(100svh - 420px), 400px));
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.home-title {
+/* The title is a board: 赠岛 written in stones, sized so the whole screen still fits. */
+.masthead {
+  display: grid;
+  justify-items: center;
+  animation: fade-in 0.5s var(--ease-out);
+}
+
+.board.title-board {
+  --cell: max(8px, min(
+    calc((100vw - 32px) / (var(--cols) + 0.84)),
+    calc((100svh - var(--reserve)) / (var(--rows) + 0.84)),
+    30px));
+  --pad: calc(var(--cell) * 0.42);
+  --dot-step: 12ms;
+  width: calc(var(--cols) * var(--cell) + 2 * var(--pad));
+  height: calc(var(--rows) * var(--cell) + 2 * var(--pad));
+  aspect-ratio: auto;
+  padding: var(--pad);
+  border-radius: calc(var(--cell) * 0.9);
+}
+
+/* Island counts, what to do next, and a way back to the bare title. */
+.title-caption {
+  width: 0;
+  min-width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "tally hint restore";
+  align-items: center;
+  column-gap: 16px;
+  min-height: 40px;
+  margin-top: 6px;
+  padding: 0 6px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.title-board[data-layout="down"] ~ .title-caption {
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "tally restore" "hint hint";
+  row-gap: 2px;
+}
+.title-tally, .title-hint, .title-restore { opacity: 0; transition: opacity 0.6s var(--ease); }
+.masthead.ready .title-tally, .masthead.ready .title-hint, .masthead.ready .title-restore { opacity: 1; }
+.title-tally { grid-area: tally; }
+.title-tally .tally { gap: 18px; animation: none; }
+.title-tally .tally-num { font-size: 20px; }
+.title-tally .delta { min-width: 1.8em; font-size: 13px; }
+.title-hint {
+  grid-area: hint;
+  min-height: 1.45em;
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(60px, 12vw, 96px);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.06em;
-  text-indent: 0.06em;
+  text-align: right;
+  transition: opacity 0.16s var(--ease);
+}
+.title-board[data-layout="down"] ~ .title-caption .title-hint { text-align: left; }
+.title-hint.swap { opacity: 0; }
+.title-restore { grid-area: restore; gap: 4px; }
+.title-restore[hidden] { display: none; }
+.masthead.ready .title-restore:disabled { opacity: 0.4; cursor: default; }
+.title-restore svg { width: 15px; height: 15px; }
+.title-tally .tally-label { color: var(--ink); font-weight: 500; }
+.title-hint.thinking::after {
+  content: "";
+  display: inline-block;
+  width: 1.2em;
+  text-align: left;
+  animation: ellipsis 1.2s steps(4) infinite;
+}
+
+/* Once the title has been beaten, the seal sits on its corner like a chop on a painting. */
+.masthead { position: relative; }
+.corner-seal {
+  position: absolute;
+  right: -10px;
+  bottom: 40px;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  transform: rotate(-6deg);
+  filter: drop-shadow(0 2px 3px rgba(90, 20, 10, 0.28));
+  transition: transform 0.4s var(--spring), filter 0.3s var(--ease);
+}
+.corner-seal[hidden] { display: none; }
+.corner-seal .seal { --cell: 2px; transform: none; box-shadow: none; transition: none; }
+.corner-seal:active { transform: rotate(-4deg) scale(0.95); }
+.corner-seal.stamping { animation: stamp-on 0.75s var(--spring) backwards; animation-delay: 0.55s; }
+@keyframes stamp-on { from { opacity: 0; transform: rotate(-18deg) scale(2.4); } }
+@media (hover: hover) {
+  .corner-seal:hover { transform: rotate(-2deg) translateY(-3px) scale(1.06); filter: drop-shadow(0 6px 8px rgba(90, 20, 10, 0.3)); }
+}
+@media (hover: hover) {
+  .link.title-restore:hover svg { transform: rotate(-50deg); }
 }
 
 .home-lede {
-  margin: 14px 0 0;
+  margin: 18px 0 0;
   font-size: clamp(19px, 2.4vw, 23px);
   font-weight: 500;
   line-height: 1.45;
@@ -725,11 +830,143 @@ dialog h2:focus { outline: none; }
 }
 .home-meta[hidden] { display: none; }
 
-.hero { margin-top: clamp(28px, 6svh, 60px); }
-.board.demo { cursor: default; }
-
 .rise { animation: rise 0.9s var(--ease-out) backwards; animation-delay: calc(var(--i) * 80ms + 60ms); }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(8px); } }
+
+/* ---------- Seal ---------- */
+
+/* White stones carved into vermilion: 岛 above 主, sized by --cell. */
+.seal {
+  --cell: 10px;
+  --pad: calc(var(--cell) * 0.95);
+  --white: #FFF5E8;
+  --shadow-white: none;
+  position: relative;
+  display: block;
+  width: calc(var(--cols, 13) * var(--cell) + 2 * var(--pad));
+  height: calc(var(--rows, 27) * var(--cell) + 2 * var(--pad));
+  padding: var(--pad);
+  border-radius: calc(var(--cell) * 0.9);
+  background: var(--seal);
+  box-shadow: var(--seal-shadow);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(-2deg);
+  transition: transform 0.6s var(--ease-out);
+}
+.seal svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* Carving: the strokes are cut in writing order, then the seal is pressed and the ink spreads. */
+.seal { --carve-start: 0.55s; --carve-step: 13ms; --pressed: calc(var(--carve-start) + var(--stones, 99) * var(--carve-step) + 0.3s); }
+.seal.carve .stone { animation: carve-in 0.45s var(--ease-out) backwards; animation-delay: calc(var(--carve-start) + var(--k) * var(--carve-step)); }
+.seal.carve .bridge.h { animation: carve-h 0.36s var(--ease-out) backwards; animation-delay: calc(var(--carve-start) + 60ms + var(--k) * var(--carve-step)); }
+.seal.carve .bridge.v { animation: carve-v 0.36s var(--ease-out) backwards; animation-delay: calc(var(--carve-start) + 60ms + var(--k) * var(--carve-step)); }
+.seal.carve { animation: press 0.7s var(--ease-out); animation-delay: var(--pressed); }
+.seal::after {
+  content: "";
+  position: absolute;
+  inset: -16%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--seal) 30%, transparent), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.seal.carve::after { animation: bloom 1.1s var(--ease-out); animation-delay: var(--pressed); }
+@keyframes carve-in { from { opacity: 0; transform: scale(0.2); } }
+@keyframes carve-h { from { transform: scaleX(0); } }
+@keyframes carve-v { from { transform: scaleY(0); } }
+@keyframes press {
+  0% { transform: perspective(900px) rotate(-2deg) translateY(-8px) scale(1.03); }
+  35% { transform: perspective(900px) rotate(-2deg) scale(0.955); }
+}
+@keyframes bloom {
+  from { opacity: 1; transform: scale(0.8); }
+  to { opacity: 0; transform: scale(1.18); }
+}
+
+/* ---------- Easter egg ---------- */
+
+.egg {
+  align-items: center;
+  justify-content: center;
+  padding: max(40px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+.egg ::selection { background: color-mix(in srgb, var(--seal) 22%, transparent); }
+
+.egg-inner {
+  width: 100%;
+  max-width: 860px;
+  display: grid;
+  justify-items: center;
+  gap: 34px;
+  text-align: center;
+}
+
+.egg-art { display: flex; align-items: flex-start; gap: 16px; }
+.egg .seal { --cell: max(6px, min(calc((100svh - 480px) / 28.9), 13px)); }
+.egg-inscription {
+  margin: 4px 0 0;
+  writing-mode: vertical-rl;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  color: var(--paper-ink-2);
+}
+
+.egg-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(34px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+.egg-body {
+  max-width: 26em;
+  margin: 14px auto 0;
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--paper-ink-2);
+  text-wrap: pretty;
+}
+.egg-score {
+  margin: 14px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--paper-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.egg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px 26px;
+  margin-top: 28px;
+}
+.egg .cta { background: var(--paper-ink); color: var(--paper); }
+.egg .link { color: var(--seal); }
+.egg-text > * { animation: rise 0.9s var(--ease-out) backwards; }
+.egg-text > :nth-child(1) { animation-delay: 0.7s; }
+.egg-text > :nth-child(2) { animation-delay: 0.8s; }
+.egg-text > :nth-child(3) { animation-delay: 0.9s; }
+.egg-text > :nth-child(4) { animation-delay: 1s; }
+.egg-inscription { animation: fade-in 1.2s var(--ease) backwards; animation-delay: 2.2s; }
+
+@media (min-width: 880px) and (min-height: 560px) {
+  .egg-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: start;
+    column-gap: 96px;
+    text-align: left;
+  }
+  .egg-art { order: 2; }
+  .egg .seal { --cell: max(8px, min(calc((100svh - 200px) / 28.9), 15px)); }
+  .egg-body { margin-left: 0; }
+  .egg-actions { justify-content: flex-start; }
+}
 
 /* ---------- Learn ---------- */
 
@@ -873,9 +1110,10 @@ dialog h2:focus { outline: none; }
 .lesson-actions .btn.ready { animation: ready 0.6s var(--spring); }
 @keyframes ready { from { transform: scale(0.9); } }
 
-/* Lesson 2: islands found, and the island under the cursor. */
+/* Islands found in lesson 2, and the island under the cursor (lesson 2 and the home title). */
 .l1 .found { fill: var(--accent); }
 .l1 .peek { fill: color-mix(in srgb, var(--black) 62%, var(--accent)); }
+.l2 .peek { fill: color-mix(in srgb, var(--white) 70%, var(--accent)); }
 
 .recap {
   display: grid;

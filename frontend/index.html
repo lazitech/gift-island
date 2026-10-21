@@ -14,7 +14,19 @@
 <body>
   <section class="view home" id="view-home" hidden>
     <main class="home-inner">
-      <h1 class="home-title rise" style="--i: 0">赠岛</h1>
+      <h1 class="sr-only">赠岛</h1>
+      <div class="masthead" id="masthead">
+        <button type="button" class="corner-seal" id="corner-seal" hidden aria-label="岛主之印：你在标题上赢过一局。打开" title="岛主之印">
+          <span class="seal"><svg aria-hidden="true"></svg></span>
+        </button>
+        <div class="title-caption">
+          <div class="title-tally" id="title-tally"></div>
+          <p class="title-hint" id="title-hint" aria-live="polite"></p>
+          <button type="button" class="link small title-restore" id="title-restore" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 8.9"/><path d="M4.5 4.5v4.4h4.4"/></svg><span>复原</span>
+          </button>
+        </div>
+      </div>
       <p class="home-lede rise" style="--i: 1">每一手，一枚给自己，一枚送对方。<br>岛多的一方获胜。</p>
       <div class="home-ctas rise" style="--i: 2">
         <button type="button" class="cta" id="home-play">开始对局</button>
@@ -24,8 +36,23 @@
         <span id="home-meta-text"></span>
         <button type="button" class="link small" id="home-new">新对局</button>
       </p>
-      <div class="hero rise" style="--i: 3">
-        <div class="board demo" id="hero-board" aria-hidden="true"><svg></svg></div>
+    </main>
+  </section>
+
+  <section class="view egg" id="view-egg" hidden>
+    <main class="egg-inner">
+      <div class="egg-art">
+        <p class="egg-inscription" id="egg-inscription"></p>
+        <div class="seal" id="egg-seal" role="img" aria-label="朱红色的印章，印文“岛主”"><svg aria-hidden="true"></svg></div>
+      </div>
+      <div class="egg-text">
+        <h1 class="egg-title" id="egg-title">你赢了标题。</h1>
+        <p class="egg-body" id="egg-body"></p>
+        <p class="egg-score" id="egg-score"></p>
+        <div class="egg-actions">
+          <button type="button" class="cta" id="egg-home">回到首页</button>
+          <button type="button" class="link" id="egg-play"><span>和最强的 AI 下一局</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button>
+        </div>
       </div>
     </main>
   </section>
