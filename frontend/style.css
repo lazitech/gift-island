@@ -518,7 +518,6 @@ dialog h2 {
 
 .field { display: grid; gap: 8px; margin-bottom: 18px; }
 .label { font-size: 13px; font-weight: 500; color: var(--ink-2); }
-.note { margin: 0; font-size: 12px; color: var(--ink-3); min-height: 1.4em; }
 
 .seg {
   --count: 2;

@@ -12,13 +12,14 @@ const N = 9;
 const AREA = N * N;
 
 const params = new URLSearchParams(location.search);
-const API_BASE = params.get("api") || "http://127.0.0.1:8765";
+// Locally serve.sh runs beside a backend on :8765; deployed, the site proxies /api/v1 on its own origin.
+const LOCAL_HOSTS = ["127.0.0.1", "localhost", "[::1]"];
+const API_BASE = params.get("api") || (LOCAL_HOSTS.includes(location.hostname) ? "http://127.0.0.1:8765" : location.origin);
 const api = createGiftIslandsClient({ baseUrl: API_BASE });
 
 const STORE_KEY = "giftislands.game.v1";
 const LEVEL_NAMES = { level1: "入门", level2: "初级", level3: "进阶", best: "最强" };
 const THINK_SIMS = { fast: 128, normal: 256, deep: 512 };
-const THINK_NOTES = { fast: "约 0.6 秒一手", normal: "约 1 秒一手", deep: "约 2 秒一手，与棋力验证时的设置相同" };
 const COLOR_NAME = { 1: "黑", 2: "白" };
 const COLS = "ABCDEFGHI";
 
@@ -467,7 +468,6 @@ function syncSegments() {
   }
   const form = new FormData(setupForm);
   $("#ai-fields").classList.toggle("closed", form.get("opponent") === "human");
-  $("#think-note").textContent = THINK_NOTES[form.get("think")] ?? "";
 }
 
 /**
