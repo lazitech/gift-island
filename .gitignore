@@ -1,0 +1,11 @@
+# Python environments and build output
+.venv/
+.venv-*/
+.toolchain/
+__pycache__/
+*.so
+.pytest_cache/
+
+# Backend runtime state and local configuration
+.runtime/
+.env

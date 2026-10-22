@@ -1,0 +1,3 @@
+# Canonical dependency entrypoint. The full lock includes the direct runtime
+# pins and all transitive versions captured from the verified CPU environment.
+-r requirements-lock.txt

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "board_size": 9,
+  "models": {
+    "level1": {
+      "file": "level1.pt",
+      "step": 501,
+      "sha256": "37d2575312ea3cdeb520a94b38ac162af7f26be42ab1aec66717bf9d854b106e",
+      "label": "入门"
+    },
+    "level2": {
+      "file": "level2.pt",
+      "step": 3500,
+      "sha256": "f2b829c3244ffa2283d31d9c6dde8b91391891be4e012bdd7b90fd194897d8b5",
+      "label": "初级"
+    },
+    "level3": {
+      "file": "level3.pt",
+      "step": 7000,
+      "sha256": "a6c0133c7433fc6a42960736a439636b74228e9c21102bb0c82b57a822915952",
+      "label": "进阶"
+    },
+    "best": {
+      "file": "best.pt",
+      "step": 521500,
+      "sha256": "2a6484d97dbe689a71e8629a7bac630950fe3ec54d749e42f6c6bbdb853d8a58",
+      "label": "最强已验证"
+    }
+  },
+  "verification": {
+    "status": "verified",
+    "ordering": [
+      "level1",
+      "level2",
+      "level3",
+      "best"
+    ],
+    "simulations": 512,
+    "games_per_match": 1000,
+    "bundle_sha256": "d166bd416a3ff2c87a3d4b42d0066fe51f7145b7082448aa443a68ec06d0d54e",
+    "source_bundle": "verified-best-d834e56d72726172.tar.gz",
+    "scope": "Recorded model ordering was tested using the bundled evaluation search protocol; lower local search budgets are not a new strength certification."
+  }
+}
