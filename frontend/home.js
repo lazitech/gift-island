@@ -1,6 +1,5 @@
 import * as rules from "./rules.js";
 import { createBoardView, bindBoardInput, focusCell } from "./board-view.js";
-import { createTally, signed } from "./tally.js";
 import { ZENG, DAO, compose } from "./glyphs.js";
 import { chooseMove } from "./title-ai.js";
 import { sealRecord, drawSeal } from "./seal.js";
@@ -30,14 +29,12 @@ function preferredLayout() {
 
 export function createHome({ root, reducedMotion, summary, onPlay, onNew, onLearn, learned, onWin, onSeal }) {
   const masthead = root.querySelector("#masthead");
-  const hintEl = root.querySelector("#title-hint");
   const restoreBtn = root.querySelector("#title-restore");
   const cornerSeal = root.querySelector("#corner-seal");
   const playBtn = root.querySelector("#home-play");
   const learnBtn = root.querySelector("#home-learn");
   const metaEl = root.querySelector("#home-meta");
   const metaText = root.querySelector("#home-meta-text");
-  const tally = createTally(root.querySelector("#title-tally"), { labels: ["你", "白方"] });
   drawSeal(cornerSeal.querySelector(".seal"));
 
   let layoutKey = null;
@@ -131,37 +128,10 @@ export function createHome({ root, reducedMotion, summary, onPlay, onNew, onLear
       view.mark(island, board[target], "peek");
     }
 
-    if (settled) tally.show(gainsOf(board), playable ? gainsOf(solid.map((v, i) => v || ghost[i])) : null, signed);
     renderCaption();
   }
 
-  let hintText = "";
-  function setHint(text) {
-    if (text === hintText) return;
-    hintText = text;
-    if (reducedMotion.matches || !hintEl.textContent) {
-      hintEl.textContent = text;
-      return;
-    }
-    hintEl.classList.add("swap");
-    clearTimeout(setHint.timer);
-    setHint.timer = setTimeout(() => {
-      hintEl.textContent = hintText;
-      hintEl.classList.remove("swap");
-    }, 140);
-  }
-
   function renderCaption() {
-    const g = settled ? gainsOf(board) : null;
-    if (!settled) setHint("");
-    else if (result === "win") setHint("你赢了！");
-    else if (result === "draw") setHint("平局，只差一点点");
-    else if (result === "loss") setHint(`白方多了 ${g[AI] - g[YOU]} 岛，这局输了`);
-    else if (thinking) setHint("白方思考中");
-    else if (pending !== null) setHint("再点一格，送给白方一枚白子");
-    else if (!moves.length) setHint("点任一空格落子，和白方比八手");
-    else setHint(`第 ${moves.length / 2 + 1} / ${MATCH} 手，轮到你`);
-    hintEl.classList.toggle("thinking", thinking);
     restoreBtn.hidden = !settled || !moves.length || result === "win";
     restoreBtn.querySelector("span").textContent = result ? "再来一局" : "重来";
     restoreBtn.disabled = busy;

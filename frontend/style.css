@@ -706,53 +706,24 @@ dialog h2:focus { outline: none; }
   border-radius: calc(var(--cell) * 0.9);
 }
 
-/* Island counts, what to do next, and a way back to the bare title. */
+/* A way back to the bare title; the row keeps its height so the button appears without a jump. */
 .title-caption {
   width: 0;
   min-width: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: "tally hint restore";
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
-  column-gap: 16px;
   min-height: 40px;
   margin-top: 6px;
   padding: 0 6px;
   font-size: 14px;
   color: var(--ink-2);
 }
-.title-board[data-layout="down"] ~ .title-caption {
-  grid-template-columns: 1fr auto;
-  grid-template-areas: "tally restore" "hint hint";
-  row-gap: 2px;
-}
-.title-tally, .title-hint, .title-restore { opacity: 0; transition: opacity 0.6s var(--ease); }
-.masthead.ready .title-tally, .masthead.ready .title-hint, .masthead.ready .title-restore { opacity: 1; }
-.title-tally { grid-area: tally; }
-.title-tally .tally { gap: 18px; animation: none; }
-.title-tally .tally-num { font-size: 20px; }
-.title-tally .delta { min-width: 1.8em; font-size: 13px; }
-.title-hint {
-  grid-area: hint;
-  min-height: 1.45em;
-  margin: 0;
-  text-align: right;
-  transition: opacity 0.16s var(--ease);
-}
-.title-board[data-layout="down"] ~ .title-caption .title-hint { text-align: left; }
-.title-hint.swap { opacity: 0; }
-.title-restore { grid-area: restore; gap: 4px; }
+.title-restore { gap: 4px; opacity: 0; transition: opacity 0.6s var(--ease); }
+.masthead.ready .title-restore { opacity: 1; }
 .title-restore[hidden] { display: none; }
 .masthead.ready .title-restore:disabled { opacity: 0.4; cursor: default; }
 .title-restore svg { width: 15px; height: 15px; }
-.title-tally .tally-label { color: var(--ink); font-weight: 500; }
-.title-hint.thinking::after {
-  content: "";
-  display: inline-block;
-  width: 1.2em;
-  text-align: left;
-  animation: ellipsis 1.2s steps(4) infinite;
-}
 
 /* Once the title has been beaten, the seal sits on its corner like a chop on a painting. */
 .masthead { position: relative; }
