@@ -1,0 +1,698 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gift Islands 9×9 Engine API",
+    "description": "赠岛四级AI后端。棋盘按行展开为81格：0空、1黑、2白。每手同时为自己和对方各落一子；连通块多者胜。接口无会话状态，前端保管棋盘。",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health",
+        "operationId": "health_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/models": {
+      "get": {
+        "tags": [
+          "Models"
+        ],
+        "summary": "Models",
+        "operationId": "models_api_v1_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rules": {
+      "get": {
+        "tags": [
+          "Game"
+        ],
+        "summary": "Rules",
+        "operationId": "rules_api_v1_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/validate": {
+      "post": {
+        "tags": [
+          "Game"
+        ],
+        "summary": "Validate Position",
+        "operationId": "validate_position_api_v1_positions_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/play-move": {
+      "post": {
+        "tags": [
+          "Game"
+        ],
+        "summary": "Play Move",
+        "operationId": "play_move_api_v1_play_move_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayMoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayMoveResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-move": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Ai Move",
+        "operationId": "ai_move_api_v1_ai_move_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIMoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIMoveResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Game already finished"
+          },
+          "422": {
+            "description": "Invalid position or settings"
+          },
+          "503": {
+            "description": "Engine busy; retry later"
+          },
+          "504": {
+            "description": "Inference time limit exceeded"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIMoveRequest": {
+        "properties": {
+          "board": {
+            "items": {
+              "type": "integer",
+              "maximum": 2.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 81,
+            "minItems": 81,
+            "title": "Board",
+            "description": "9×9棋盘按行展开；0空、1黑、2白。"
+          },
+          "player": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player",
+            "description": "当前行动者；省略时根据已完成手数推导。黑先。"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "level1",
+              "level2",
+              "level3",
+              "best"
+            ],
+            "title": "Level",
+            "default": "best"
+          },
+          "simulations": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2048.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulations"
+          },
+          "symmetry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "random",
+                  "ensemble"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symmetry"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AIMoveRequest"
+      },
+      "AIMoveResponse": {
+        "properties": {
+          "requested_position_key": {
+            "type": "string",
+            "title": "Requested Position Key"
+          },
+          "move": {
+            "$ref": "#/components/schemas/Move"
+          },
+          "position": {
+            "$ref": "#/components/schemas/PositionResponse"
+          },
+          "model": {
+            "$ref": "#/components/schemas/ModelSummary"
+          },
+          "search": {
+            "$ref": "#/components/schemas/SearchSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requested_position_key",
+          "move",
+          "position",
+          "model",
+          "search"
+        ],
+        "title": "AIMoveResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ModelSummary": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "level1",
+              "level2",
+              "level3",
+              "best"
+            ],
+            "title": "Level"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "step": {
+            "type": "integer",
+            "title": "Step"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "label",
+          "step",
+          "sha256"
+        ],
+        "title": "ModelSummary"
+      },
+      "Move": {
+        "properties": {
+          "player": {
+            "type": "integer",
+            "title": "Player"
+          },
+          "action_index": {
+            "type": "integer",
+            "title": "Action Index"
+          },
+          "self_point": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Self Point"
+          },
+          "opponent_point": {
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Opponent Point"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player",
+          "action_index",
+          "self_point",
+          "opponent_point"
+        ],
+        "title": "Move"
+      },
+      "PlayMoveRequest": {
+        "properties": {
+          "board": {
+            "items": {
+              "type": "integer",
+              "maximum": 2.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 81,
+            "minItems": 81,
+            "title": "Board",
+            "description": "9×9棋盘按行展开；0空、1黑、2白。"
+          },
+          "player": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player",
+            "description": "当前行动者；省略时根据已完成手数推导。黑先。"
+          },
+          "self_point": {
+            "items": {
+              "type": "integer",
+              "maximum": 8.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Self Point",
+            "description": "[row, col]，给当前玩家落子，坐标从0开始。"
+          },
+          "opponent_point": {
+            "items": {
+              "type": "integer",
+              "maximum": 8.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Opponent Point",
+            "description": "[row, col]，给对方落子；必须是另一个空格。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "self_point",
+          "opponent_point"
+        ],
+        "title": "PlayMoveRequest"
+      },
+      "PlayMoveResponse": {
+        "properties": {
+          "requested_position_key": {
+            "type": "string",
+            "title": "Requested Position Key"
+          },
+          "move": {
+            "$ref": "#/components/schemas/Move"
+          },
+          "position": {
+            "$ref": "#/components/schemas/PositionResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requested_position_key",
+          "move",
+          "position"
+        ],
+        "title": "PlayMoveResponse"
+      },
+      "PositionRequest": {
+        "properties": {
+          "board": {
+            "items": {
+              "type": "integer",
+              "maximum": 2.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 81,
+            "minItems": 81,
+            "title": "Board",
+            "description": "9×9棋盘按行展开；0空、1黑、2白。"
+          },
+          "player": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player",
+            "description": "当前行动者；省略时根据已完成手数推导。黑先。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PositionRequest"
+      },
+      "PositionResponse": {
+        "properties": {
+          "board": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Board"
+          },
+          "player": {
+            "type": "integer",
+            "title": "Player"
+          },
+          "move_number": {
+            "type": "integer",
+            "title": "Move Number"
+          },
+          "empty_count": {
+            "type": "integer",
+            "title": "Empty Count"
+          },
+          "terminal": {
+            "type": "boolean",
+            "title": "Terminal"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/Scores"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "ongoing",
+              "black_win",
+              "white_win",
+              "draw"
+            ],
+            "title": "Result"
+          },
+          "position_key": {
+            "type": "string",
+            "title": "Position Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "board",
+          "player",
+          "move_number",
+          "empty_count",
+          "terminal",
+          "scores",
+          "result",
+          "position_key"
+        ],
+        "title": "PositionResponse"
+      },
+      "Scores": {
+        "properties": {
+          "black": {
+            "type": "integer",
+            "title": "Black"
+          },
+          "white": {
+            "type": "integer",
+            "title": "White"
+          }
+        },
+        "type": "object",
+        "required": [
+          "black",
+          "white"
+        ],
+        "title": "Scores"
+      },
+      "SearchSummary": {
+        "properties": {
+          "simulations": {
+            "type": "integer",
+            "title": "Simulations"
+          },
+          "symmetry": {
+            "type": "string",
+            "enum": [
+              "none",
+              "random",
+              "ensemble"
+            ],
+            "title": "Symmetry"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "signed_value": {
+            "type": "number",
+            "title": "Signed Value",
+            "description": "当前行动者视角的胜概率减负概率，范围[-1,1]；不是胜率。"
+          },
+          "elapsed_ms": {
+            "type": "number",
+            "title": "Elapsed Ms"
+          },
+          "exact_endgame": {
+            "type": "integer",
+            "title": "Exact Endgame"
+          }
+        },
+        "type": "object",
+        "required": [
+          "simulations",
+          "symmetry",
+          "seed",
+          "signed_value",
+          "elapsed_ms",
+          "exact_endgame"
+        ],
+        "title": "SearchSummary"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
