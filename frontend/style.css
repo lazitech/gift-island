@@ -584,6 +584,16 @@ dialog h2 {
 .btn.primary { background: var(--accent); color: var(--accent-ink); }
 .btn.secondary { background: var(--fill); }
 .btn[hidden] { display: none; }
+.btn:disabled { opacity: 0.4; cursor: default; filter: none; transform: none; }
+.dev-note {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
 @media (hover: hover) {
   .btn:hover { filter: brightness(1.06); }
 }
