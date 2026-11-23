@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- Generated from index.html by tools/make-vertical.cjs: edit index.html, then rerun. -->
+<html
+  lang="zh-CN"
+  data-composition-variables='[{"id":"lang","type":"enum","label":"Language","default":"zh","options":[{"value":"zh","label":"中文"},{"value":"en","label":"English"}]},{"id":"theme","type":"enum","label":"Theme","default":"dark","options":[{"value":"dark","label":"Dark"},{"value":"light","label":"Light"}]}]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Gift Islands · 9:16</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/film.css" />
+    <style>
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="45" data-width="1080" data-height="1920">
+      <div id="ground"></div>
+
+      <!-- Shot 1: 赠岛 written in stones -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="6.667" data-track-index="0" data-track-kind="graphics">
+        <div class="stage">
+          <div id="s1-board" class="board"></div>
+          <div id="s1-caption"><p id="s1-head" class="head"></p></div>
+        </div>
+      </section>
+
+      <!-- Shots 2–5: one game on a 7 × 7 board -->
+      <section id="game" class="scene clip" data-start="6.667" data-duration="32.666" data-track-index="0" data-track-kind="graphics">
+        <div class="stage">
+          <div id="game-board" class="board"></div>
+          <div class="copy" id="s2-copy"><p id="s2-head" class="head"></p><p id="s2-sub" class="sub"></p></div>
+          <div class="copy" id="s3-copy"><p id="s3-head" class="head"></p><p id="s3-sub" class="sub"></p></div>
+          <div class="copy" id="s4-copy"><p id="s4-head" class="head"></p><p id="s4-sub" class="sub"></p></div>
+          <div class="copy" id="s5-copy"><p id="s5-head" class="head"></p><p id="s5-sub" class="sub"></p></div>
+          <div class="counters" id="s3-counters"></div>
+          <div class="counters" id="s4-counters"></div>
+          <div class="counters" id="s5-counters"></div>
+        </div>
+      </section>
+
+      <!-- Shot 6: the end card -->
+      <section id="s6" class="scene clip" data-start="39.333" data-duration="5.667" data-track-index="0" data-track-kind="graphics">
+        <div class="stage">
+          <div id="s6-board" class="board"></div>
+          <div id="s6-copy"><div id="s6-pill" class="pill"></div><div id="s6-sub"></div></div>
+        </div>
+      </section>
+
+      <audio id="music" class="clip" src="assets/music.m4a" data-start="0" data-duration="45" data-track-index="2" data-volume="1"></audio>
+    </div>
+
+    <script src="assets/film-data.js"></script>
+    <script src="assets/film.js"></script>
+  </body>
+</html>

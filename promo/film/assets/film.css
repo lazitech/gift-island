@@ -1,0 +1,173 @@
+/* Gift Islands promo film. Tokens are the web front end's (frontend/style.css), both themes. */
+
+@font-face { font-family: "PingFang SC Film"; src: url("fonts/PingFangSC-Regular.subset.otf") format("opentype"); font-weight: 400; }
+@font-face { font-family: "PingFang SC Film"; src: url("fonts/PingFangSC-Semibold.subset.otf") format("opentype"); font-weight: 600; }
+@font-face { font-family: "Inter Display Film"; src: url("fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
+@font-face { font-family: "Inter Display Film"; src: url("fonts/InterDisplay-Medium.otf") format("opentype"); font-weight: 500; }
+@font-face { font-family: "Inter Film"; src: url("fonts/Inter-Regular.otf") format("opentype"); font-weight: 400; }
+
+#root {
+  --bg: #F5F5F7;
+  --ink: #1D1D1F;
+  --ink-2: #6E6E73;
+  --ink-3: #A1A1A6;
+  --accent: #0071E3;
+  --accent-ink: #FFFFFF;
+  --sea: #E4E9ED;
+  --sea-dot: #B8C2CA;
+  --black: #1D1D1F;
+  --white: #FFFFFF;
+  --ghost-white: #FFFFFF;
+  --shadow-black: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.22));
+  --shadow-white: drop-shadow(0 0.6px 0.4px rgba(0, 0, 0, 0.32)) drop-shadow(0 2px 4px rgba(40, 55, 70, 0.16));
+  --chip-black: 0 2px 4px rgba(0, 0, 0, 0.22);
+  --chip-white: 0 0.6px 0.6px rgba(0, 0, 0, 0.3), 0 2px 5px rgba(40, 55, 70, 0.18);
+
+  --head: "PingFang SC Film", "Inter Display Film", sans-serif;
+  --body: "PingFang SC Film", "Inter Film", sans-serif;
+  --num: "Inter Display Film", sans-serif;
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root.dark {
+  --bg: #000000;
+  --ink: #F5F5F7;
+  --ink-2: #98989D;
+  --ink-3: #636366;
+  --accent: #0A84FF;
+  --sea: #2E363D;
+  --sea-dot: #4F5B65;
+  --black: #0B0C0D;
+  --white: #ECECEF;
+  --ghost-white: #A6A9AD;
+  /* Black stones on the dark sea: a hairline of light around the landmass lifts them. */
+  --shadow-black: drop-shadow(0 0 0.9px rgba(255, 255, 255, 0.34)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.6));
+  --shadow-white: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.55));
+  --chip-black: 0 0 0 1.5px rgba(255, 255, 255, 0.22), 0 3px 6px rgba(0, 0, 0, 0.6);
+  --chip-white: 0 3px 6px rgba(0, 0, 0, 0.55);
+}
+
+#root.en {
+  --head: "Inter Display Film", "PingFang SC Film", sans-serif;
+  --body: "Inter Film", "PingFang SC Film", sans-serif;
+}
+
+#ground { position: absolute; inset: 0; background: var(--bg); }
+
+.scene { position: absolute; inset: 0; }
+.stage { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform, filter, opacity; }
+
+/* ---------- Boards ---------- */
+
+.board {
+  position: absolute;
+  background: var(--sea);
+  box-sizing: border-box;
+}
+.board svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.dot { fill: var(--sea-dot); }
+.layer.l1 { filter: var(--shadow-black); }
+.layer.l2 { filter: var(--shadow-white); }
+.ring { fill: none; stroke: var(--accent); stroke-width: 5; }
+.last { fill: var(--accent); }
+
+/* ---------- Copy ---------- */
+
+.copy { position: absolute; }
+.copy .head, .copy .sub { margin: 0; will-change: transform, filter, opacity; }
+.copy .head {
+  font-family: var(--head);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.16;
+}
+.copy .sub {
+  font-family: var(--body);
+  font-weight: 400;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+#root.en .copy .head { letter-spacing: -0.025em; }
+
+.counters { position: absolute; display: flex; gap: 84px; padding-left: 10px; }
+.counter { display: flex; align-items: center; gap: 22px; will-change: transform, filter, opacity; }
+.chip { flex: none; border-radius: 50%; }
+/* A stone on its own patch of sea, so the black one reads on a black ground. */
+.chip.c1 { background: var(--black); box-shadow: var(--chip-black), 0 0 0 10px var(--sea); }
+.chip.c2 { background: var(--white); box-shadow: var(--chip-white), 0 0 0 10px var(--sea); }
+.num {
+  position: relative;
+  font-family: var(--num);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.num span { position: absolute; left: 0; top: 0; }
+.num .sizer { position: static; visibility: hidden; }
+.preview {
+  font-family: var(--num);
+  font-weight: 500;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ---------- Shot 1: the title ---------- */
+
+#s1-caption { position: absolute; left: 0; right: 0; text-align: center; }
+#s1-caption .head { font-family: var(--head); font-weight: 600; letter-spacing: 0.01em; }
+
+/* ---------- Shot 6: the end card ---------- */
+
+#s6-copy { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: "Inter Display Film", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  will-change: transform, opacity, filter;
+}
+#s6-sub { font-family: var(--body); color: var(--ink-2); will-change: transform, opacity, filter; }
+
+/* ---------- Landscape 1920 × 1080 ---------- */
+
+#root.landscape #s1-caption { top: 872px; }
+#root.landscape #s1-caption .head { font-size: 60px; }
+#root.landscape .copy { left: 1100px; top: 286px; width: 720px; }
+#root.landscape .copy .head { font-size: 72px; }
+#root.landscape .copy .sub { font-size: 40px; margin-top: 28px; }
+#root.landscape .counters { left: 1100px; top: 716px; }
+#root.landscape .chip { width: 56px; height: 56px; }
+#root.landscape .num { font-size: 104px; }
+#root.landscape .preview { font-size: 56px; }
+#root.landscape #s6-copy { top: 600px; }
+#root.landscape .pill { height: 104px; padding: 0 60px; border-radius: 52px; font-size: 46px; }
+#root.landscape #s6-sub { margin-top: 40px; font-size: 36px; }
+
+/* ---------- Portrait 1080 × 1920 ---------- */
+
+#root.portrait #s1-caption { top: 1110px; }
+#root.portrait #s1-caption .head { font-size: 64px; }
+#root.portrait .copy { left: 132px; top: 300px; width: 750px; }
+#root.portrait .copy .head { font-size: 80px; }
+#root.portrait .copy .sub { font-size: 46px; margin-top: 26px; }
+#root.portrait .counters { left: 132px; top: 690px; gap: 64px; }
+#root.portrait .chip { width: 52px; height: 52px; }
+#root.portrait .num { font-size: 96px; }
+#root.portrait .preview { font-size: 52px; }
+#root.portrait #s6-copy { top: 960px; }
+#root.portrait .pill { height: 112px; padding: 0 64px; border-radius: 56px; font-size: 50px; }
+#root.portrait #s6-sub { margin-top: 44px; font-size: 40px; }

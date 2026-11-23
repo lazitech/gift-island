@@ -1,0 +1,16 @@
+# Rendered videos stay local (PLAN.md); so do render caches and scratch frames.
+output/
+**/renders/
+*.mp4
+*.wav
+**/.hyperframes/
+render.log
+
+# PingFang is licensed: neither the originals nor the subsets go in git (see REVIEW.md).
+**/fonts/PingFang*
+
+# Generated: rerun film/tools/make-vertical.cjs and brag-output/work/tools/build.cjs.
+film/vertical/assets/
+brag-output/work/assets/brag.js
+brag-output/work/assets/film-data.js
+brag-output/work/assets/fonts/

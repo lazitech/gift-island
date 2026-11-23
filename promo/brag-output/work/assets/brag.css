@@ -1,0 +1,59 @@
+@font-face { font-family: "PF"; src: url("fonts/PingFangSC-Semibold.subset.otf") format("opentype"); font-weight: 600; }
+@font-face { font-family: "PF"; src: url("fonts/PingFangSC-Regular.subset.otf") format("opentype"); font-weight: 400; }
+@font-face { font-family: "IDF"; src: url("fonts/InterDisplay-SemiBold.otf") format("opentype"); font-weight: 600; }
+@font-face { font-family: "IDF"; src: url("fonts/InterDisplay-Medium.otf") format("opentype"); font-weight: 500; }
+
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+
+/* The site's dark theme (frontend/style.css). */
+#root {
+  --bg: #000000; --ink: #F5F5F7; --ink-2: #98989D; --ink-3: #636366; --accent: #0A84FF; --accent-ink: #FFFFFF;
+  --sea: #2E363D; --sea-dot: #4F5B65; --black: #0B0C0D; --white: #ECECEF; --ghost-white: #A6A9AD;
+  --shadow-black: drop-shadow(0 0 0.9px rgba(255, 255, 255, 0.34)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.6));
+  --shadow-white: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.55));
+  position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink);
+  font-family: "PF", "IDF", sans-serif; -webkit-font-smoothing: antialiased;
+}
+#ground { position: absolute; inset: 0; background: var(--bg); }
+.stage { position: absolute; inset: 0; will-change: transform, opacity, filter; }
+p { margin: 0; }
+
+.board { position: absolute; background: var(--sea); box-sizing: border-box; }
+.board svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.dot { fill: var(--sea-dot); }
+.layer.l1 { filter: var(--shadow-black); }
+.layer.l2 { filter: var(--shadow-white); }
+.ring { fill: none; stroke: var(--accent); stroke-width: 5; }
+.last { fill: var(--accent); }
+
+/* 1 hook: giant type */
+#hook { display: flex; flex-direction: column; justify-content: center; padding-left: 190px; gap: 8px; }
+.hook-line { font-size: 150px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; display: flex; align-items: center; }
+.hook-line .w { display: inline-block; transform-origin: 50% 70%; }
+#hook-stone {
+  display: inline-block; width: 118px; height: 118px; margin: 0 14px 0 22px; border-radius: 50%;
+  background: var(--white); box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+/* 2 title */
+#title-cap { position: absolute; left: 0; right: 0; top: 870px; text-align: center; font-size: 64px; font-weight: 600; }
+
+/* 3–4 game */
+.copy { position: absolute; left: 1090px; top: 250px; width: 760px; }
+.copy .head { font-size: 84px; font-weight: 600; line-height: 1.18; }
+#rule-sub { margin-top: 18px; color: var(--ink-2); }
+#big-num {
+  position: absolute; left: 1090px; top: 170px; width: 400px; height: 300px;
+  font-family: "IDF", sans-serif; font-weight: 600; font-size: 280px; line-height: 300px; font-variant-numeric: tabular-nums;
+}
+#big-num span { position: absolute; left: 0; top: 0; transform-origin: 30% 55%; }
+.twist { position: absolute; left: 1090px; top: 560px; width: 760px; font-size: 64px; font-weight: 600; line-height: 1.25; }
+
+/* 5 outro */
+#outro { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#win { font-size: 120px; font-weight: 600; letter-spacing: -0.01em; }
+#cta {
+  margin-top: 64px; height: 112px; padding: 0 72px; border-radius: 56px; display: flex; align-items: center;
+  background: var(--accent); color: var(--accent-ink); font-size: 52px; font-weight: 600;
+}
+#url { margin-top: 34px; font-family: "IDF", sans-serif; font-weight: 500; font-size: 48px; color: var(--ink-2); }

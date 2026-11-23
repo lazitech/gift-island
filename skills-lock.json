@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "skills": {
+    "brag": {
+      "source": "latent-spaces/brag",
+      "sourceType": "github",
+      "computedHash": "031ed3d7176bd3808b031595bd2d5b46072375b54a23a78c02e5cdc137191c90",
+      "ref": "06379432a9243c951dfcc051153be18d2d261044"
+    },
+    "hyperframes": {
+      "source": "heygen-com/hyperframes",
+      "sourceType": "github",
+      "computedHash": "2410221fb18d256b900c9ea8b15b8e3e7f119c7da153d24c55f9b854b7f07eb7",
+      "ref": "96abfaf0d01e67ed94f0149a99d8795b67fa79e0"
+    },
+    "hyperframes-cli": {
+      "source": "heygen-com/hyperframes",
+      "sourceType": "github",
+      "computedHash": "3d0969e461fc5ccf87e731f407f337f42c40ae1a2f9fcbbb0c6d281716a4bf49",
+      "ref": "96abfaf0d01e67ed94f0149a99d8795b67fa79e0"
+    }
+  }
+}

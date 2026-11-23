@@ -9,3 +9,6 @@ __pycache__/
 # Backend runtime state and local configuration
 .runtime/
 .env
+
+# Project-level agent skills: restore from skills-lock.json (see promo/REVIEW.md)
+.claude/skills/

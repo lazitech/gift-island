@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Gift Islands · brag</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/brag.css" />
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="20" data-width="1920" data-height="1080">
+      <div id="ground"></div>
+
+      <section id="s-hook" class="clip" data-start="0" data-duration="3" data-track-index="0">
+        <div id="hook" class="stage">
+          <p class="hook-line"><span class="w">下棋，</span></p>
+          <p class="hook-line"><span class="w">还要</span><span class="w">送对方</span><span class="w">一子</span><span id="hook-stone"></span><span class="w">？</span></p>
+        </div>
+      </section>
+
+      <section id="s-title" class="clip" data-start="3" data-duration="3" data-track-index="0">
+        <div id="title" class="stage">
+          <div id="title-board" class="board"></div>
+          <p id="title-cap">赠岛 · Gift Islands</p>
+        </div>
+      </section>
+
+      <section id="s-game" class="clip" data-start="6" data-duration="9.5" data-track-index="0">
+        <div id="game" class="stage">
+          <div id="game-board" class="board"></div>
+          <div class="copy">
+            <p id="rule-head" class="head">每一手，</p>
+            <p id="rule-sub" class="head">一枚给自己，<br />一枚送对方。</p>
+          </div>
+          <div id="big-num" data-layout-allow-overlap><span class="old"></span><span class="new"></span></div>
+          <p id="twist-head" class="twist">送对位置，<br />对方反而少一座岛。</p>
+        </div>
+      </section>
+
+      <section id="s-outro" class="clip" data-start="15.5" data-duration="4.5" data-track-index="0">
+        <div id="outro" class="stage">
+          <p id="win">岛多的一方获胜。</p>
+          <div id="cta">开始对局</div>
+          <p id="url">giftislands.top</p>
+        </div>
+      </section>
+
+      <audio id="music" class="clip" src="assets/music.m4a" data-start="0" data-duration="20" data-track-index="2" data-volume="1"></audio>
+    </div>
+    <script src="assets/film-data.js"></script>
+    <script src="assets/brag.js"></script>
+  </body>
+</html>
