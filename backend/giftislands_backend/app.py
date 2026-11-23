@@ -33,8 +33,8 @@ def create_app(settings=None, engine_factory=None):
             await asyncio.to_thread(app.state.engine.close)
 
     app = FastAPI(
-        title="Gift Islands 9×9 Engine API", version=__version__, lifespan=lifespan,
-        description="赠岛四级AI后端。棋盘按行展开为81格：0空、1黑、2白。每手同时为自己和对方各落一子；连通块多者胜。接口无会话状态，前端保管棋盘。",
+        title="Gift Islands Engine API", version=__version__, lifespan=lifespan,
+        description="赠岛AI后端。支持7×7、9×9和11×11棋盘。每手同时为自己和对方各落一子；连通块多者胜。接口无会话状态，前端保管棋盘。",
     )
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins),
                        allow_origin_regex=settings.cors_origin_regex, allow_credentials=False,
@@ -60,11 +60,14 @@ def create_app(settings=None, engine_factory=None):
         engine = request.app.state.engine
         return {"models": engine.model_summaries(), "default_level": "best",
                 "default_simulations": settings.default_simulations, "max_simulations": settings.max_simulations,
-                "default_symmetry": settings.default_symmetry, "verification": engine.catalog["verification"]}
+                "default_symmetry": settings.default_symmetry, "verification": engine.catalog["verification"],
+                "default_levels": {"7": "classic", "9": "best", "11": "classic"},
+                "board_sizes": {"7": ["classic"], "9": ["level1", "level2", "level3", "best", "classic"],
+                                "11": ["classic"]}}
 
     @app.get("/api/v1/rules", tags=["Game"])
     async def rules():
-        return {"board_size": 9, "board_encoding": {"empty": 0, "black": 1, "white": 2},
+        return {"board_size": 9, "board_sizes": [7, 9, 11], "board_encoding": {"empty": 0, "black": 1, "white": 2},
                 "coordinates": "zero-based [row, column]", "first_player": 1, "moves_per_game": 40,
                 "placement": "self_point receives player; opponent_point receives 3-player; both points must be distinct and empty",
                 "connections": "orthogonal only", "scoring": "one point per same-color connected component; larger score wins",
@@ -81,7 +84,7 @@ def create_app(settings=None, engine_factory=None):
             raise HTTPException(409, detail={"code": "game_finished", "message": "棋局已经结束。"})
         action, next_state = apply_points(state, body.self_point, body.opponent_point)
         return {"requested_position_key": position_response(state)["position_key"],
-                "move": describe_move(action, state.player), "position": position_response(next_state)}
+                "move": describe_move(action, state.player, state.n), "position": position_response(next_state)}
 
     @app.post("/api/v1/ai-move", response_model=AIMoveResponse, tags=["AI"],
               responses={409: {"description": "Game already finished"}, 422: {"description": "Invalid position or settings"},
@@ -90,13 +93,16 @@ def create_app(settings=None, engine_factory=None):
         state = checked_position(body.board, body.player)
         if state.terminal:
             raise HTTPException(409, detail={"code": "game_finished", "message": "棋局已经结束。"})
+        level = body.level or ("best" if state.n == 9 else "classic")
+        if level != "classic" and state.n != 9:
+            raise HTTPException(422, detail={"code": "level_unavailable", "message": "神经网络模型仅支持9×9棋盘。"})
         simulations = body.simulations if body.simulations is not None else settings.default_simulations
         symmetry = body.symmetry if body.symmetry is not None else settings.default_symmetry
-        if simulations > settings.max_simulations:
+        if level != "classic" and simulations > settings.max_simulations:
             raise HTTPException(422, detail={"code": "search_budget_exceeded", "message": f"simulations最大为{settings.max_simulations}。"})
         from .engine import EngineBusy
         try:
-            future = request.app.state.engine.submit(state, body.level, simulations, symmetry, body.seed)
+            future = request.app.state.engine.submit(state, level, simulations, symmetry, body.seed)
         except EngineBusy as exc:
             raise HTTPException(503, detail={"code": "engine_busy", "message": str(exc)}, headers={"Retry-After": "1"}) from exc
         try:
@@ -109,7 +115,7 @@ def create_app(settings=None, engine_factory=None):
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            logger.exception("Inference failed for level=%s", body.level)
+            logger.exception("Inference failed for level=%s", level)
             raise HTTPException(500, detail={"code": "inference_failed", "message": "推理失败，请查看后端日志。"}) from exc
 
     return app

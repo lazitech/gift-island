@@ -1,6 +1,6 @@
 # 赠岛后端
 
-四个棋力等级的赠岛模型及其 CPU 推理服务。前端只需通过 HTTP 发送 JSON，协议见 [../docs/API.md](../docs/API.md)。
+四个棋力等级的赠岛模型、经典搜索及其 CPU 推理服务。前端只需通过 HTTP 发送 JSON，协议见 [../docs/API.md](../docs/API.md)。
 
 以下命令都在 `backend/` 目录下运行。
 
@@ -45,9 +45,11 @@ bash stop.sh
 
 `models/models.json` 记录各模型的 SHA-256，启动时逐个校验。四级棋力顺序经过双方每手 512 次模拟、每组 1000 局的对战验证。服务默认每手 128 次模拟、不做对称集成，以保证交互速度；这一默认设置没有重新验证四级棋力顺序。请求可选择 512 次模拟和 `ensemble`，代价是更长的计算时间。
 
+此外，`classic`（经典搜索）使用纯 Python 和 numpy 的浅层 alpha-beta 搜索，不读取模型文件。7×7、9×9 和11×11均可使用经典搜索，神经网络等级仅支持9×9。经典搜索默认每步搜索2500个节点，`GIFTISLANDS_CLASSIC_NODES` 可调整，范围100到10000000。`GIFTISLANDS_CLASSIC_TIME_MS` 保留为1500毫秒的硬安全上限，只有触发时间上限时结果才可能受机器调度影响。
+
 ## 接口概要
 
-棋盘固定 9×9，按行展开为 81 个整数：`0` 空、`1` 黑、`2` 白。坐标为从 0 开始的 `[row, col]`。每一手同时在两个不同空格分别放当前玩家和对方的棋子，黑先，黑白棋子数始终相同。
+棋盘支持 7×7、9×9 和11×11，按行展开为49、81或121个整数：`0` 空、`1` 黑、`2` 白。坐标为从 0 开始的 `[row, col]`。每一手同时在两个不同空格分别放当前玩家和对方的棋子，黑先，黑白棋子数始终相同。省略 AI 的 `level` 时，9×9默认使用 `best`，7×7和11×11默认使用 `classic`。
 
 后端不保存棋局：前端保存每次返回的 `position`，下次请求提交其 `board` 和 `player`。`requested_position_key` 可用来识别迟到的旧请求结果。
 
@@ -105,6 +107,8 @@ bash start.sh
 | `GIFTISLANDS_MAX_SIMULATIONS` | `512` | 单次请求上限（最大 2048） |
 | `GIFTISLANDS_SYMMETRY` | `none` | 默认对称模式 |
 | `GIFTISLANDS_REQUEST_TIMEOUT` | `120` | HTTP 等待上限（秒） |
+| `GIFTISLANDS_CLASSIC_NODES` | `2500` | 经典搜索主预算，节点数 |
+| `GIFTISLANDS_CLASSIC_TIME_MS` | `1500` | 经典搜索时间预算（50到20000毫秒） |
 | `GIFTISLANDS_CORS_ORIGINS` | 空 | 额外允许的精确 Origin，逗号分隔 |
 
 默认允许任意端口的 `localhost` / `127.0.0.1` / `[::1]` 前端跨域。线上部署时，建议用反向代理把前端和 `/api/v1/*` 放在同一个 HTTPS 域名下，这样不需要跨域配置。

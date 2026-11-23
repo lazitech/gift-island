@@ -4,7 +4,7 @@
 
 ## 棋盘和落子
 
-棋盘是按行展开的 81 个整数数组：`0` 为空、`1` 为黑、`2` 为白。坐标使用从 0 开始的 `[row, column]`。黑方先手，每手同时落两个不同的空格：`self_point` 放当前玩家，`opponent_point` 放另一方。完成一手后 `player` 自动切换。
+棋盘支持 7×7、9×9 和11×11，按行展开为49、81或121个整数数组：`0` 为空、`1` 为黑、`2` 为白。坐标使用从 0 开始的 `[row, column]`。黑方先手，每手同时落两个不同的空格：`self_point` 放当前玩家，`opponent_point` 放另一方。完成一手后 `player` 自动切换。
 
 终局在只剩一个空格时出现。得分是同色四邻域连通块数量，`scores.black` 和 `scores.white` 分别是双方得分。
 
@@ -34,6 +34,7 @@
 ```json
 {
   "board": [0, 0, 0, "...共81个元素..."],
+  "board_size": 9,
   "player": 1,
   "move_number": 0,
   "empty_count": 81,
@@ -88,7 +89,7 @@
 }
 ```
 
-`level` 为 `level1`、`level2`、`level3` 或 `best`；`symmetry` 为 `none`、`random` 或 `ensemble`。`simulations` 至少为 1，且不能超过服务配置的 `max_simulations`（默认 512）。默认使用 `best`、128 simulations、`none` 对称模式。
+`level` 可为 `level1`、`level2`、`level3`、`best` 或 `classic`，省略时按棋盘大小选择默认等级。`classic` 支持所有大小，神经网络等级仅支持9×9。`symmetry` 为 `none`、`random` 或 `ensemble`。`simulations` 至少为1，且不能超过服务配置的 `max_simulations`（经典搜索忽略此字段）。默认使用 `best`（9×9）或 `classic`（7×7、11×11）。
 
 响应在 `play-move` 响应基础上增加：
 
@@ -101,12 +102,17 @@
     "seed": 123,
     "signed_value": 0.12,
     "elapsed_ms": 42.1,
-    "exact_endgame": 5
+    "exact_endgame": 5,
+    "depth": null
   }
 }
 ```
 
 `search.simulations` 是实际完成的搜索次数。`signed_value` 是当前行动者视角的胜概率减负概率，范围 `[-1,1]`，不是胜率。
+
+经典搜索响应的 `model` 固定为 `{"level":"classic","label":"经典搜索","step":0,"sha256":""}`，`search.symmetry` 为 `none`，`exact_endgame` 为0，`depth` 为完成的最深迭代层数。`/api/v1/models` 的 `board_sizes` 字段列出各棋盘可用等级，`default_levels` 返回 `{"7":"classic","9":"best","11":"classic"}`，`/api/v1/rules` 返回 `[7, 9, 11]`。
+
+经典搜索主预算按节点计数，默认2500个节点，可用 `GIFTISLANDS_CLASSIC_NODES` 调整。`GIFTISLANDS_CLASSIC_TIME_MS` 是1500毫秒的硬安全上限，只有触发该上限时结果才可能受机器调度影响。
 
 ## 错误和取消
 

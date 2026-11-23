@@ -11,6 +11,7 @@ import torch
 
 from giftisland.common import load_network
 from giftisland.search import Evaluator, search, select_action
+from giftisland.classic import choose_move
 
 from .positions import describe_move, position_response
 
@@ -84,9 +85,22 @@ class InferenceEngine:
 
     def _infer(self, state, level, simulations, symmetry, seed):
         seed = secrets.randbits(63) if seed is None else seed
+        started = time.perf_counter()
+        if level == "classic":
+            result = choose_move(state, time_ms=self.settings.classic_time_ms,
+                                 nodes=self.settings.classic_nodes, seed=seed)
+            next_state = state.play(result.action)
+            return {
+                "requested_position_key": position_response(state)["position_key"],
+                "model": {"level": "classic", "label": "经典搜索", "step": 0, "sha256": ""},
+                "move": describe_move(result.action, state.player, state.n), "position": position_response(next_state),
+                "search": {"simulations": int(result.simulations), "symmetry": "none", "seed": seed,
+                            "signed_value": float(result.signed_value),
+                            "elapsed_ms": round((time.perf_counter() - started) * 1000, 3),
+                            "exact_endgame": 0, "depth": result.depth},
+            }
         evaluator = Evaluator(self.models[level], self.device, seed=seed, symmetry=symmetry,
                               precision="fp32", pad_batches=False)
-        started = time.perf_counter()
         result = search(state.board[None], [state.player], evaluator,
                         simulations=simulations, seed=seed, noise_fraction=0,
                         root_temperature=1, threads=self.settings.search_threads,
@@ -101,10 +115,10 @@ class InferenceEngine:
         return {
             "requested_position_key": position_response(state)["position_key"],
             "model": {"level": level, **{key: item[key] for key in ("label", "step", "sha256")}},
-            "move": describe_move(action, state.player), "position": position_response(next_state),
+            "move": describe_move(action, state.player, state.n), "position": position_response(next_state),
             "search": {"simulations": int(result["simulations"]), "symmetry": symmetry, "seed": seed,
                        "signed_value": float(result["value"]), "elapsed_ms": round((time.perf_counter()-started)*1000, 3),
-                       "exact_endgame": 5},
+                       "exact_endgame": 5, "depth": None},
         }
 
     def close(self):
