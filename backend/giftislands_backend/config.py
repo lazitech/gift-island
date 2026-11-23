@@ -15,6 +15,7 @@ class Settings:
     max_simulations: int = 512
     default_symmetry: str = "none"
     request_timeout: float = 120.0
+    classic_time_ms: int = 1500
     cors_origins: tuple[str, ...] = ()
     cors_origin_regex: str = r"^https?://(?:localhost|127\.0\.0\.1|\[::1\])(?::[0-9]{1,5})?$"
 
@@ -28,6 +29,7 @@ class Settings:
             max_simulations=int(os.getenv("GIFTISLANDS_MAX_SIMULATIONS", "512")),
             default_symmetry=os.getenv("GIFTISLANDS_SYMMETRY", "none"),
             request_timeout=float(os.getenv("GIFTISLANDS_REQUEST_TIMEOUT", "120")),
+            classic_time_ms=int(os.getenv("GIFTISLANDS_CLASSIC_TIME_MS", "1500")),
             cors_origins=tuple(x.strip() for x in os.getenv("GIFTISLANDS_CORS_ORIGINS", "").split(",") if x.strip()),
             cors_origin_regex=os.getenv("GIFTISLANDS_CORS_ORIGIN_REGEX", cls.cors_origin_regex),
         )
@@ -43,3 +45,5 @@ class Settings:
             raise ValueError("Unsupported symmetry mode")
         if not 1 <= self.request_timeout <= 600:
             raise ValueError("Request timeout must be between 1 and 600 seconds")
+        if not 50 <= self.classic_time_ms <= 20000:
+            raise ValueError("Classic search time must be between 50 and 20000 milliseconds")

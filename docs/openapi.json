@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Gift Islands 9×9 Engine API",
-    "description": "赠岛四级AI后端。棋盘按行展开为81格：0空、1黑、2白。每手同时为自己和对方各落一子；连通块多者胜。接口无会话状态，前端保管棋盘。",
+    "title": "Gift Islands Engine API",
+    "description": "赠岛AI后端。支持7×7、9×9和11×11棋盘。每手同时为自己和对方各落一子；连通块多者胜。接口无会话状态，前端保管棋盘。",
     "version": "1.0.0"
   },
   "paths": {
@@ -219,10 +219,10 @@
               "minimum": 0.0
             },
             "type": "array",
-            "maxItems": 81,
-            "minItems": 81,
+            "maxItems": 121,
+            "minItems": 49,
             "title": "Board",
-            "description": "9×9棋盘按行展开；0空、1黑、2白。"
+            "description": "7×7、9×9或11×11棋盘按行展开；0空、1黑、2白。"
           },
           "player": {
             "anyOf": [
@@ -239,15 +239,22 @@
             "description": "当前行动者；省略时根据已完成手数推导。黑先。"
           },
           "level": {
-            "type": "string",
-            "enum": [
-              "level1",
-              "level2",
-              "level3",
-              "best"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "level1",
+                  "level2",
+                  "level3",
+                  "best",
+                  "classic"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Level",
-            "default": "best"
+            "title": "Level"
           },
           "simulations": {
             "anyOf": [
@@ -346,7 +353,8 @@
               "level1",
               "level2",
               "level3",
-              "best"
+              "best",
+              "classic"
             ],
             "title": "Level"
           },
@@ -429,10 +437,10 @@
               "minimum": 0.0
             },
             "type": "array",
-            "maxItems": 81,
-            "minItems": 81,
+            "maxItems": 121,
+            "minItems": 49,
             "title": "Board",
-            "description": "9×9棋盘按行展开；0空、1黑、2白。"
+            "description": "7×7、9×9或11×11棋盘按行展开；0空、1黑、2白。"
           },
           "player": {
             "anyOf": [
@@ -451,7 +459,7 @@
           "self_point": {
             "items": {
               "type": "integer",
-              "maximum": 8.0,
+              "maximum": 10.0,
               "minimum": 0.0
             },
             "type": "array",
@@ -463,7 +471,7 @@
           "opponent_point": {
             "items": {
               "type": "integer",
-              "maximum": 8.0,
+              "maximum": 10.0,
               "minimum": 0.0
             },
             "type": "array",
@@ -511,10 +519,10 @@
               "minimum": 0.0
             },
             "type": "array",
-            "maxItems": 81,
-            "minItems": 81,
+            "maxItems": 121,
+            "minItems": 49,
             "title": "Board",
-            "description": "9×9棋盘按行展开；0空、1黑、2白。"
+            "description": "7×7、9×9或11×11棋盘按行展开；0空、1黑、2白。"
           },
           "player": {
             "anyOf": [
@@ -543,6 +551,10 @@
             },
             "type": "array",
             "title": "Board"
+          },
+          "board_size": {
+            "type": "integer",
+            "title": "Board Size"
           },
           "player": {
             "type": "integer",
@@ -581,6 +593,7 @@
         "type": "object",
         "required": [
           "board",
+          "board_size",
           "player",
           "move_number",
           "empty_count",
@@ -640,6 +653,17 @@
           "exact_endgame": {
             "type": "integer",
             "title": "Exact Endgame"
+          },
+          "depth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depth"
           }
         },
         "type": "object",
