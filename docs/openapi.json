@@ -213,16 +213,40 @@
       "AIMoveRequest": {
         "properties": {
           "board": {
-            "items": {
-              "type": "integer",
-              "maximum": 2.0,
-              "minimum": 0.0
-            },
-            "type": "array",
-            "maxItems": 121,
-            "minItems": 49,
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 49,
+                "minItems": 49
+              },
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 81,
+                "minItems": 81
+              },
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 121,
+                "minItems": 121
+              }
+            ],
             "title": "Board",
-            "description": "7×7、9×9或11×11棋盘按行展开；0空、1黑、2白。"
+            "description": "7×7、9×9或11×11棋盘按行展开（恰好49、81或121格）；0空、1黑、2白。"
           },
           "player": {
             "anyOf": [
@@ -431,16 +455,40 @@
       "PlayMoveRequest": {
         "properties": {
           "board": {
-            "items": {
-              "type": "integer",
-              "maximum": 2.0,
-              "minimum": 0.0
-            },
-            "type": "array",
-            "maxItems": 121,
-            "minItems": 49,
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 49,
+                "minItems": 49
+              },
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 81,
+                "minItems": 81
+              },
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 121,
+                "minItems": 121
+              }
+            ],
             "title": "Board",
-            "description": "7×7、9×9或11×11棋盘按行展开；0空、1黑、2白。"
+            "description": "7×7、9×9或11×11棋盘按行展开（恰好49、81或121格）；0空、1黑、2白。"
           },
           "player": {
             "anyOf": [
@@ -513,16 +561,40 @@
       "PositionRequest": {
         "properties": {
           "board": {
-            "items": {
-              "type": "integer",
-              "maximum": 2.0,
-              "minimum": 0.0
-            },
-            "type": "array",
-            "maxItems": 121,
-            "minItems": 49,
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 49,
+                "minItems": 49
+              },
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 81,
+                "minItems": 81
+              },
+              {
+                "items": {
+                  "type": "integer",
+                  "maximum": 2.0,
+                  "minimum": 0.0
+                },
+                "type": "array",
+                "maxItems": 121,
+                "minItems": 121
+              }
+            ],
             "title": "Board",
-            "description": "7×7、9×9或11×11棋盘按行展开；0空、1黑、2白。"
+            "description": "7×7、9×9或11×11棋盘按行展开（恰好49、81或121格）；0空、1黑、2白。"
           },
           "player": {
             "anyOf": [

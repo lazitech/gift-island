@@ -517,12 +517,12 @@ function syncSegments() {
 
 /**
  * `suggest` preselects an opponent for someone who has never set up a game;
- * `opponent` preselects one regardless.
+ * `opponent` (and optionally `size`) preselects one regardless.
  */
-function openSetup({ suggest = null, opponent = null } = {}) {
+function openSetup({ suggest = null, opponent = null, size = null } = {}) {
   setupForm.elements.opponent.value = opponent ?? (suggest && !hasSavedGame ? suggest : settings.opponent);
   setupForm.elements.color.value = String(settings.humanColor);
-  setupForm.elements.size.value = String(settings.size);
+  setupForm.elements.size.value = String(size ?? settings.size);
   syncSegments();
   openDialog(setupDialog);
 }
@@ -714,7 +714,7 @@ const egg = createEgg({
   root: views.egg,
   reducedMotion,
   onHome: () => go("home"),
-  onPlay: () => openSetup({ opponent: "best" }),
+  onPlay: () => openSetup({ opponent: "best", size: 9 }),
 });
 
 const routeFromHash = () => {

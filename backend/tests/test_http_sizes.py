@@ -64,3 +64,17 @@ def test_neural_level_is_unavailable_on_non_nine_board():
         assert response.status_code == 422
         assert response.json()["detail"]["code"] == "level_unavailable"
 
+
+
+def test_rules_moves_by_size_and_only_exact_board_lengths():
+    with TestClient(create_app(Settings(), ClassicFakeEngine)) as client:
+        rules = client.get("/api/v1/rules").json()
+        assert rules["moves_per_game_by_size"] == {"7": 24, "9": 40, "11": 60}
+        assert rules["moves_per_game"] == 40
+        for length in (48, 50, 80, 82, 120, 122):
+            response = client.post("/api/v1/positions/validate", json={"board": [0] * length})
+            assert response.status_code == 422, length
+        for length in (49, 81, 121):
+            response = client.post("/api/v1/positions/validate", json={"board": [0] * length})
+            assert response.status_code == 200, length
+            assert response.json()["board_size"] * response.json()["board_size"] == length

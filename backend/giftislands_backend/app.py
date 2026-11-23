@@ -69,6 +69,7 @@ def create_app(settings=None, engine_factory=None):
     async def rules():
         return {"board_size": 9, "board_sizes": [7, 9, 11], "board_encoding": {"empty": 0, "black": 1, "white": 2},
                 "coordinates": "zero-based [row, column]", "first_player": 1, "moves_per_game": 40,
+                "moves_per_game_by_size": {"7": 24, "9": 40, "11": 60},
                 "placement": "self_point receives player; opponent_point receives 3-player; both points must be distinct and empty",
                 "connections": "orthogonal only", "scoring": "one point per same-color connected component; larger score wins",
                 "terminal_empty_cells": 1, "state_management": "stateless; client submits the entire position"}
