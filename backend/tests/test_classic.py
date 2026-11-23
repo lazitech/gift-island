@@ -30,7 +30,7 @@ def test_classic_solves_a_forced_tiny_endgame():
         2, 1, 2, 1, 2, 1, 2, 1, 2,
     ]
     state = GameState(n=7, board=board, player=2)
-    result = choose_move(state, time_ms=100, seed=3)
+    result = choose_move(state, time_ms=100, nodes=1000, seed=3)
     values = [-minimax_cached(state.play(int(action))) for action in state.legal_actions()]
     assert max(values) == 1
     assert -minimax_cached(state.play(result.action)) == 1
@@ -38,9 +38,10 @@ def test_classic_solves_a_forced_tiny_endgame():
 
 def test_classic_is_deterministic_for_a_seed():
     state = GameState(n=11)
-    first = choose_move(state, time_ms=50, seed=123)
-    second = choose_move(state, time_ms=50, seed=123)
+    first = choose_move(state, time_ms=50, nodes=30, seed=123)
+    second = choose_move(state, time_ms=50, nodes=30, seed=123)
     assert first.action == second.action
+    assert first.simulations == second.simulations
 
 
 def test_transposition_bounds_match_plain_minimax():
@@ -58,6 +59,18 @@ def test_transposition_bounds_match_plain_minimax():
             board[index] = 1 if offset % 2 else 2
         state = GameState(n=7, board=board,
                           player=1 if np.count_nonzero(board == 1) % 2 == 0 else 2)
-        searcher = ClassicSearcher(state, time_ms=10000, seed=seed)
+        searcher = ClassicSearcher(state, nodes=100000, time_ms=10000, seed=seed)
         assert np.isclose(searcher._negamax(state, 3, -2.0, 2.0), plain(searcher, state, 3))
+
+
+def test_classic_fallback_value_uses_root_perspective():
+    empty = {1, 7, 13, 31, 43}
+    board = np.zeros(49, dtype=np.int8)
+    for offset, index in enumerate(cell for cell in range(49) if cell not in empty):
+        board[index] = 1 if offset % 2 else 2
+    state = GameState(n=7, board=board, player=1)
+    result = choose_move(state, nodes=0, time_ms=100, seed=4)
+    probe = ClassicSearcher(state, nodes=0, time_ms=100, seed=4)
+    expected = probe._evaluate(state.play(result.action))
+    assert result.signed_value == float(0.95 * np.tanh(-expected / 4.0))
 

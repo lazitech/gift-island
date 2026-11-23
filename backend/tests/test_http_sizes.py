@@ -41,6 +41,9 @@ def test_supported_sizes_and_classic_default():
     settings = Settings(models_dir=Path(__file__).parents[1] / "models", classic_time_ms=50)
     client = TestClient(create_app(settings, engine_factory=ClassicFakeEngine))
     with client:
+        models = client.get("/api/v1/models").json()
+        assert models["default_level"] == "best"
+        assert models["default_levels"] == {"7": "classic", "9": "best", "11": "classic"}
         for n in (7, 11):
             board = [0] * (n * n)
             validated = client.post("/api/v1/positions/validate", json={"board": board})

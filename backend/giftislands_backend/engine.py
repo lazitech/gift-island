@@ -87,7 +87,8 @@ class InferenceEngine:
         seed = secrets.randbits(63) if seed is None else seed
         started = time.perf_counter()
         if level == "classic":
-            result = choose_move(state, self.settings.classic_time_ms, seed)
+            result = choose_move(state, time_ms=self.settings.classic_time_ms,
+                                 nodes=self.settings.classic_nodes, seed=seed)
             next_state = state.play(result.action)
             return {
                 "requested_position_key": position_response(state)["position_key"],

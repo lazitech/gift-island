@@ -61,6 +61,7 @@ def create_app(settings=None, engine_factory=None):
         return {"models": engine.model_summaries(), "default_level": "best",
                 "default_simulations": settings.default_simulations, "max_simulations": settings.max_simulations,
                 "default_symmetry": settings.default_symmetry, "verification": engine.catalog["verification"],
+                "default_levels": {"7": "classic", "9": "best", "11": "classic"},
                 "board_sizes": {"7": ["classic"], "9": ["level1", "level2", "level3", "best", "classic"],
                                 "11": ["classic"]}}
 

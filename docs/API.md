@@ -110,7 +110,9 @@
 
 `search.simulations` 是实际完成的搜索次数。`signed_value` 是当前行动者视角的胜概率减负概率，范围 `[-1,1]`，不是胜率。
 
-经典搜索响应的 `model` 固定为 `{"level":"classic","label":"经典搜索","step":0,"sha256":""}`，`search.symmetry` 为 `none`，`exact_endgame` 为0，`depth` 为完成的最深迭代层数。`/api/v1/models` 的 `board_sizes` 字段列出各棋盘可用等级，`/api/v1/rules` 返回 `[7, 9, 11]`。
+经典搜索响应的 `model` 固定为 `{"level":"classic","label":"经典搜索","step":0,"sha256":""}`，`search.symmetry` 为 `none`，`exact_endgame` 为0，`depth` 为完成的最深迭代层数。`/api/v1/models` 的 `board_sizes` 字段列出各棋盘可用等级，`default_levels` 返回 `{"7":"classic","9":"best","11":"classic"}`，`/api/v1/rules` 返回 `[7, 9, 11]`。
+
+经典搜索主预算按节点计数，默认2500个节点，可用 `GIFTISLANDS_CLASSIC_NODES` 调整。`GIFTISLANDS_CLASSIC_TIME_MS` 是1500毫秒的硬安全上限，只有触发该上限时结果才可能受机器调度影响。
 
 ## 错误和取消
 
