@@ -8,7 +8,6 @@ import { sealRecord, recordWin } from "./seal.js";
 
 // ---------- Constants ----------
 
-// The engine plays on 9×9 only; two-player games may pick another size.
 const AI_SIZE = 9;
 const SIZES = [7, 9, 11];
 let N = AI_SIZE;
@@ -28,8 +27,7 @@ const API_BASE = params.get("api") || (LOCAL_HOSTS.includes(location.hostname) ?
 const api = createGiftIslandsClient({ baseUrl: API_BASE });
 
 const STORE_KEY = "giftislands.game.v1";
-const LEVEL_NAMES = { level1: "入门", level2: "初级", level3: "进阶", best: "最强" };
-const THINK_SIMS = { fast: 128, normal: 256, deep: 512 };
+const LEVEL_NAMES = { level1: "入门", level3: "进阶", best: "最强", classic: "电脑" };
 const COLOR_NAME = { 1: "黑", 2: "白" };
 const COLS = "ABCDEFGHIJK";
 
@@ -69,7 +67,7 @@ function isValidBoard(board) {
 
 // ---------- State ----------
 
-let settings = { opponent: "level3", humanColor: 1, think: "normal", size: AI_SIZE };
+let settings = { opponent: "level3", last9Opponent: "level3", humanColor: 1, size: AI_SIZE };
 /** Each entry: { board, move: {player, self, gift} | null, value: black-perspective AI estimate | null } */
 let history = [{ board: emptyBoard(), move: null, value: null }];
 
@@ -115,17 +113,18 @@ function restore() {
     const data = JSON.parse(localStorage.getItem(STORE_KEY));
     if (!data || !Array.isArray(data.history) || !data.history.length) return false;
     const s = data.settings ?? {};
-    const human = s.opponent === "human";
-    const size = human && SIZES.includes(s.size) ? s.size : AI_SIZE;
+    const migratedOpponent = s.opponent === "level2" ? "level3" : s.opponent;
+    const size = SIZES.includes(s.size) ? s.size : AI_SIZE;
     setSize(size);
     if (!data.history.every((e) => isValidBoard(e.board))) {
       setSize(AI_SIZE);
       return false;
     }
+    const restoredOpponent = migratedOpponent === "human" ? "human" : size === 9 ? migratedOpponent : "classic";
     settings = {
-      opponent: s.opponent in LEVEL_NAMES || human ? s.opponent : "level3",
+      opponent: restoredOpponent in LEVEL_NAMES || restoredOpponent === "human" ? restoredOpponent : "level3",
+      last9Opponent: s.last9Opponent in LEVEL_NAMES && s.last9Opponent !== "classic" ? s.last9Opponent : (migratedOpponent in LEVEL_NAMES && migratedOpponent !== "classic" ? migratedOpponent : "level3"),
       humanColor: s.humanColor === 2 ? 2 : 1,
-      think: s.think in THINK_SIMS ? s.think : "normal",
       size,
     };
     history = data.history.map((e) => ({ board: e.board, move: e.move ?? null, value: e.value ?? null }));
@@ -329,8 +328,8 @@ async function aiTurn() {
   const payload = {
     board: before.board,
     player: pos.player,
-    level: settings.opponent,
-    simulations: Math.min(THINK_SIMS[settings.think], maxSimulations),
+    level: N === 9 ? settings.opponent : "classic",
+    simulations: Math.min(128, maxSimulations),
   };
 
   let result = null;
@@ -479,18 +478,43 @@ function closeDialog(dialog) {
   });
 }
 
+function syncOpponentOptions() {
+  const seg = $("#opponent-seg");
+  const classic = seg.querySelector('input[value="classic"]')?.closest("label");
+  if (!classic) {
+    const label = document.createElement("label");
+    label.innerHTML = '<input type="radio" name="opponent" value="classic"><span>电脑</span>';
+    seg.insertBefore(label, seg.querySelector("label:last-of-type"));
+  }
+  const size = Number(setupForm.elements.size.value);
+  const neural = ["level1", "level3", "best"];
+  const selected = setupForm.elements.opponent.value;
+  if (size === 9) {
+    for (const value of neural) seg.querySelector(`input[value="${value}"]`).closest("label").hidden = false;
+    seg.querySelector('input[value="classic"]').closest("label").hidden = true;
+    if (selected === "classic") setupForm.elements.opponent.value = settings.last9Opponent || "level3";
+  } else {
+    for (const value of neural) {
+      const input = seg.querySelector(`input[value="${value}"]`);
+      input.closest("label").hidden = true;
+      if (input.checked) settings.last9Opponent = value;
+    }
+    seg.querySelector('input[value="classic"]').closest("label").hidden = false;
+    if (selected !== "human") setupForm.elements.opponent.value = "classic";
+  }
+}
+
 function syncSegments() {
+  syncOpponentOptions();
   for (const seg of setupForm.querySelectorAll(".seg")) {
-    const inputs = [...seg.querySelectorAll("input")];
+    const inputs = [...seg.querySelectorAll("input")].filter((input) => !input.closest("label")?.hidden);
     seg.style.setProperty("--count", inputs.length);
     seg.style.setProperty("--index", Math.max(0, inputs.findIndex((i) => i.checked)));
   }
   const form = new FormData(setupForm);
   const human = form.get("opponent") === "human";
-  for (const [id, open] of [["#ai-fields", !human], ["#human-fields", human]]) {
-    $(id).classList.toggle("closed", !open);
-    $(id).inert = !open;
-  }
+  $("#ai-fields").classList.toggle("closed", human);
+  $("#ai-fields").inert = human;
 }
 
 /**
@@ -500,8 +524,8 @@ function syncSegments() {
 function openSetup({ suggest = null, opponent = null } = {}) {
   setupForm.elements.opponent.value = opponent ?? (suggest && !hasSavedGame ? suggest : settings.opponent);
   setupForm.elements.color.value = String(settings.humanColor);
-  setupForm.elements.think.value = settings.think;
   setupForm.elements.size.value = String(settings.size);
+  syncOpponentOptions();
   syncSegments();
   openDialog(setupDialog);
 }
@@ -509,7 +533,7 @@ function openSetup({ suggest = null, opponent = null } = {}) {
 function startGame() {
   cancelAI();
   closeDialog(resultDialog);
-  applySize(vsAI() ? AI_SIZE : settings.size);
+  applySize(settings.size);
   history = [{ board: emptyBoard(), move: null, value: null }];
   ui.pending = null;
   ui.error = null;
@@ -591,16 +615,15 @@ setupForm.addEventListener("change", syncSegments);
 setupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(setupForm);
+  const size = SIZES.includes(Number(form.get("size"))) ? Number(form.get("size")) : AI_SIZE;
+  const selectedOpponent = form.get("opponent");
+  const opponent = size === 9 ? (selectedOpponent === "classic" ? settings.last9Opponent : selectedOpponent) : selectedOpponent === "human" ? "human" : "classic";
   settings = {
-    opponent: form.get("opponent"),
+    opponent,
+    last9Opponent: size === 9 && opponent !== "human" ? opponent : settings.last9Opponent || "level3",
     humanColor: Number(form.get("color")) === 2 ? 2 : 1,
-    think: form.get("think"),
-    size: AI_SIZE,
+    size,
   };
-  if (settings.opponent === "human") {
-    const size = Number(form.get("size"));
-    settings.size = SIZES.includes(size) ? size : AI_SIZE;
-  }
   startGame();
   await closeDialog(setupDialog);
   go("play");
@@ -661,7 +684,9 @@ let eggFresh = false;
 function gameSummary() {
   const pos = position();
   if (!hasSavedGame || pos.terminal || history.length < 2) return null;
-  const against = vsAI() ? `对阵${levelName()}` : `双人对局 · ${N}×${N}`;
+  const against = vsAI()
+    ? `对阵${levelName()}${N === 9 ? "" : ` · ${N}×${N}`}`
+    : `双人对局 · ${N}×${N}`;
   return { label: `第 ${pos.moveNumber} 手 · ${against}` };
 }
 

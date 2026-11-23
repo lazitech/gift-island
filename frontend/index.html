@@ -134,10 +134,19 @@
       </p>
 
       <div class="field">
+        <span class="label" id="lbl-size">棋盘</span>
+        <div class="seg" role="radiogroup" aria-labelledby="lbl-size">
+          <label><input type="radio" name="size" value="7"><span>7 × 7</span></label>
+          <label><input type="radio" name="size" value="9"><span>9 × 9</span></label>
+          <label><input type="radio" name="size" value="11"><span>11 × 11</span></label>
+          <i class="seg-thumb" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="field">
         <span class="label" id="lbl-opponent">对手</span>
-        <div class="seg" role="radiogroup" aria-labelledby="lbl-opponent">
+        <div class="seg" id="opponent-seg" role="radiogroup" aria-labelledby="lbl-opponent">
           <label><input type="radio" name="opponent" value="level1"><span>入门</span></label>
-          <label><input type="radio" name="opponent" value="level2"><span>初级</span></label>
           <label><input type="radio" name="opponent" value="level3"><span>进阶</span></label>
           <label><input type="radio" name="opponent" value="best"><span>最强</span></label>
           <label><input type="radio" name="opponent" value="human"><span>双人</span></label>
@@ -152,29 +161,6 @@
             <div class="seg" role="radiogroup" aria-labelledby="lbl-color">
               <label><input type="radio" name="color" value="1"><span>黑子先行</span></label>
               <label><input type="radio" name="color" value="2"><span>白子后行</span></label>
-              <i class="seg-thumb" aria-hidden="true"></i>
-            </div>
-          </div>
-          <div class="field">
-            <span class="label" id="lbl-think">AI 思考</span>
-            <div class="seg" role="radiogroup" aria-labelledby="lbl-think">
-              <label><input type="radio" name="think" value="fast"><span>快</span></label>
-              <label><input type="radio" name="think" value="normal"><span>标准</span></label>
-              <label><input type="radio" name="think" value="deep"><span>深入</span></label>
-              <i class="seg-thumb" aria-hidden="true"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="collapse closed" id="human-fields">
-        <div class="collapse-inner">
-          <div class="field">
-            <span class="label" id="lbl-size">棋盘</span>
-            <div class="seg" role="radiogroup" aria-labelledby="lbl-size">
-              <label><input type="radio" name="size" value="7"><span>7 × 7</span></label>
-              <label><input type="radio" name="size" value="9"><span>9 × 9</span></label>
-              <label><input type="radio" name="size" value="11"><span>11 × 11</span></label>
               <i class="seg-thumb" aria-hidden="true"></i>
             </div>
           </div>
