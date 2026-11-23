@@ -31,47 +31,55 @@ function bridgePath([x, y], horizontal, W = 23) {
 }
 
 export function createBoardView(boardEl, cols, rows = cols) {
-  const area = cols * rows;
+  let area, els, edges, marks, center;
   const svg = boardEl.querySelector("svg") ?? svgEl("svg", { "aria-hidden": "true" }, boardEl);
-  svg.replaceChildren();
-  svg.setAttribute("viewBox", `0 0 ${cols * CELL} ${rows * CELL}`);
 
-  const els = { dots: [], stones: { 1: [], 2: [] }, bridges: { 1: new Map(), 2: new Map() } };
-  const edges = [];
-  const marks = {};
-  const center = (i) => centerOf(i, cols);
+  /** (Re)draw an empty grid of the given size. */
+  function build(c, r = c) {
+    cols = c;
+    rows = r;
+    area = cols * rows;
+    svg.replaceChildren();
+    svg.setAttribute("viewBox", `0 0 ${cols * CELL} ${rows * CELL}`);
+    els = { dots: [], stones: { 1: [], 2: [] }, bridges: { 1: new Map(), 2: new Map() } };
+    edges = [];
+    marks = {};
+    center = (i) => centerOf(i, cols);
 
-  const dots = svgEl("g", {}, svg);
-  for (let i = 0; i < area; i++) {
-    const [cx, cy] = center(i);
-    const d = svgEl("circle", { cx, cy, r: 5, class: "dot" }, dots);
-    d.style.setProperty("--d", Math.floor(i / cols) + (i % cols));
-    els.dots.push(d);
-  }
-
-  for (let a = 0; a < area; a++) {
-    if (a % cols < cols - 1) edges.push({ a, b: a + 1, key: `${a}h`, h: true });
-    if (a < area - cols) edges.push({ a, b: a + cols, key: `${a}v`, h: false });
-  }
-
-  for (const color of [1, 2]) {
-    const layer = svgEl("g", { class: `layer l${color}` }, svg);
-    const bridges = svgEl("g", {}, layer);
-    const stones = svgEl("g", {}, layer);
-    for (const e of edges) {
-      els.bridges[color].set(e.key, svgEl("path", { d: bridgePath(center(e.a), e.h), class: `bridge ${e.h ? "h" : "v"}` }, bridges));
-    }
+    const dots = svgEl("g", {}, svg);
     for (let i = 0; i < area; i++) {
       const [cx, cy] = center(i);
-      els.stones[color].push(svgEl("circle", { cx, cy, r: STONE_R, class: "stone" }, stones));
+      const d = svgEl("circle", { cx, cy, r: 5, class: "dot" }, dots);
+      d.style.setProperty("--d", Math.floor(i / cols) + (i % cols));
+      els.dots.push(d);
     }
+
+    for (let a = 0; a < area; a++) {
+      if (a % cols < cols - 1) edges.push({ a, b: a + 1, key: `${a}h`, h: true });
+      if (a < area - cols) edges.push({ a, b: a + cols, key: `${a}v`, h: false });
+    }
+
+    for (const color of [1, 2]) {
+      const layer = svgEl("g", { class: `layer l${color}` }, svg);
+      const bridges = svgEl("g", {}, layer);
+      const stones = svgEl("g", {}, layer);
+      for (const e of edges) {
+        els.bridges[color].set(e.key, svgEl("path", { d: bridgePath(center(e.a), e.h), class: `bridge ${e.h ? "h" : "v"}` }, bridges));
+      }
+      for (let i = 0; i < area; i++) {
+        const [cx, cy] = center(i);
+        els.stones[color].push(svgEl("circle", { cx, cy, r: STONE_R, class: "stone" }, stones));
+      }
+    }
+
+    const markLayer = svgEl("g", { class: "mark" }, svg);
+    marks.last = [svgEl("circle", { r: 7, class: "last" }, markLayer), svgEl("circle", { r: 7, class: "last" }, markLayer)];
+    marks.pending = svgEl("circle", { r: 45, class: "ring" }, markLayer);
+    marks.focusWrap = svgEl("g", { class: "focus-wrap" }, markLayer);
+    marks.focus = svgEl("circle", { cx: 0, cy: 0, r: 46, class: "ring focus-ring" }, marks.focusWrap);
   }
 
-  const markLayer = svgEl("g", { class: "mark" }, svg);
-  marks.last = [svgEl("circle", { r: 7, class: "last" }, markLayer), svgEl("circle", { r: 7, class: "last" }, markLayer)];
-  marks.pending = svgEl("circle", { r: 45, class: "ring" }, markLayer);
-  marks.focusWrap = svgEl("g", { class: "focus-wrap" }, markLayer);
-  marks.focus = svgEl("circle", { cx: 0, cy: 0, r: 46, class: "ring focus-ring" }, marks.focusWrap);
+  build(cols, rows);
 
   /**
    * solid / ghost: per-cell colour (0 none). last: [self, gift] or null. pending, focus: a cell or null.
@@ -170,7 +178,17 @@ export function createBoardView(boardEl, cols, rows = cols) {
     setTimeout(() => boardEl.classList.remove("intro"), 600 + 28 * (cols + rows));
   }
 
-  return { cols, rows, area, el: boardEl, render, mark, clearMarks, light, cellFromEvent, nope, intro };
+  /** Redraw at a new size; a no-op if the size is unchanged. */
+  function resize(c, r = c) {
+    if (c !== cols || r !== rows) build(c, r);
+  }
+
+  return {
+    get cols() { return cols; },
+    get rows() { return rows; },
+    get area() { return area; },
+    el: boardEl, render, mark, clearMarks, light, cellFromEvent, nope, intro, resize,
+  };
 }
 
 /**
@@ -201,7 +219,7 @@ export function drawStones(svg, cols, rows, order, color, { waist } = {}) {
  * `state` holds { hover, focus, keyboard } and is mutated in place; `onChange` re-renders.
  */
 export function bindBoardInput(view, state, { onChange, onChoose }) {
-  const { el, cols, rows } = view;
+  const { el } = view;
 
   el.addEventListener("pointermove", (event) => {
     if (event.pointerType !== "mouse") return;
@@ -230,6 +248,7 @@ export function bindBoardInput(view, state, { onChange, onChoose }) {
     const step = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[event.key];
     if (step) {
       event.preventDefault();
+      const { cols, rows } = view;
       const r = Math.floor(state.focus / cols), c = state.focus % cols;
       const nr = Math.min(rows - 1, Math.max(0, r + step[0])), nc = Math.min(cols - 1, Math.max(0, c + step[1]));
       state.focus = nr * cols + nc;

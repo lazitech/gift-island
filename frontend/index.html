@@ -105,7 +105,7 @@
         <div class="score"><span class="num" id="score-1">0</span><span class="unit">岛</span><span class="delta" id="delta-1"></span></div>
       </div>
       <div class="clock">
-        <div class="moves"><span id="move-no">0</span><span class="of">/ 40 手</span></div>
+        <div class="moves"><span id="move-no">0</span><span class="of">/ <span id="move-total">40</span> 手</span></div>
         <div class="balance" id="balance" hidden title="AI 对局势的估计，不是胜率"><i></i></div>
       </div>
       <div class="side right" id="side-2" data-color="2">
@@ -161,6 +161,20 @@
               <label><input type="radio" name="think" value="fast"><span>快</span></label>
               <label><input type="radio" name="think" value="normal"><span>标准</span></label>
               <label><input type="radio" name="think" value="deep"><span>深入</span></label>
+              <i class="seg-thumb" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="collapse closed" id="human-fields">
+        <div class="collapse-inner">
+          <div class="field">
+            <span class="label" id="lbl-size">棋盘</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lbl-size">
+              <label><input type="radio" name="size" value="7"><span>7 × 7</span></label>
+              <label><input type="radio" name="size" value="9"><span>9 × 9</span></label>
+              <label><input type="radio" name="size" value="11"><span>11 × 11</span></label>
               <i class="seg-thumb" aria-hidden="true"></i>
             </div>
           </div>

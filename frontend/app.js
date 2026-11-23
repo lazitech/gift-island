@@ -8,8 +8,18 @@ import { sealRecord, recordWin } from "./seal.js";
 
 // ---------- Constants ----------
 
-const N = 9;
-const AREA = N * N;
+// The engine plays on 9×9 only; two-player games may pick another size.
+const AI_SIZE = 9;
+const SIZES = [7, 9, 11];
+let N = AI_SIZE;
+let AREA = N * N;
+
+function setSize(n) {
+  N = n;
+  AREA = n * n;
+}
+
+const centerCell = () => (AREA - 1) / 2;
 
 const params = new URLSearchParams(location.search);
 // Locally serve.sh runs beside a backend on :8765; deployed, the site proxies /api/v1 on its own origin.
@@ -21,7 +31,7 @@ const STORE_KEY = "giftislands.game.v1";
 const LEVEL_NAMES = { level1: "入门", level2: "初级", level3: "进阶", best: "最强" };
 const THINK_SIMS = { fast: 128, normal: 256, deep: 512 };
 const COLOR_NAME = { 1: "黑", 2: "白" };
-const COLS = "ABCDEFGHI";
+const COLS = "ABCDEFGHIJK";
 
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -59,14 +69,14 @@ function isValidBoard(board) {
 
 // ---------- State ----------
 
-let settings = { opponent: "level3", humanColor: 1, think: "normal" };
+let settings = { opponent: "level3", humanColor: 1, think: "normal", size: AI_SIZE };
 /** Each entry: { board, move: {player, self, gift} | null, value: black-perspective AI estimate | null } */
 let history = [{ board: emptyBoard(), move: null, value: null }];
 
 const ui = {
   pending: null,
   hover: null,
-  focus: 40,
+  focus: centerCell(),
   keyboard: false,
   thinking: false,
   staged: null,
@@ -104,16 +114,24 @@ function restore() {
   try {
     const data = JSON.parse(localStorage.getItem(STORE_KEY));
     if (!data || !Array.isArray(data.history) || !data.history.length) return false;
-    if (!data.history.every((e) => isValidBoard(e.board))) return false;
-    const s = data.settings || {};
+    const s = data.settings ?? {};
+    const human = s.opponent === "human";
+    const size = human && SIZES.includes(s.size) ? s.size : AI_SIZE;
+    setSize(size);
+    if (!data.history.every((e) => isValidBoard(e.board))) {
+      setSize(AI_SIZE);
+      return false;
+    }
     settings = {
-      opponent: s.opponent in LEVEL_NAMES || s.opponent === "human" ? s.opponent : "level3",
+      opponent: s.opponent in LEVEL_NAMES || human ? s.opponent : "level3",
       humanColor: s.humanColor === 2 ? 2 : 1,
       think: s.think in THINK_SIMS ? s.think : "normal",
+      size,
     };
     history = data.history.map((e) => ({ board: e.board, move: e.move ?? null, value: e.value ?? null }));
     return true;
   } catch {
+    setSize(AI_SIZE);
     return false;
   }
 }
@@ -191,6 +209,7 @@ function renderScores(model) {
     sideEls[color].classList.toggle("thinking", ui.thinking && color === aiColor());
   }
   $("#move-no").textContent = pos.moveNumber;
+  $("#move-total").textContent = Math.floor(AREA / 2);
 
   const balance = $("#balance");
   const last = [...history].reverse().find((e) => e.value !== null);
@@ -467,7 +486,11 @@ function syncSegments() {
     seg.style.setProperty("--index", Math.max(0, inputs.findIndex((i) => i.checked)));
   }
   const form = new FormData(setupForm);
-  $("#ai-fields").classList.toggle("closed", form.get("opponent") === "human");
+  const human = form.get("opponent") === "human";
+  for (const [id, open] of [["#ai-fields", !human], ["#human-fields", human]]) {
+    $(id).classList.toggle("closed", !open);
+    $(id).inert = !open;
+  }
 }
 
 /**
@@ -478,6 +501,7 @@ function openSetup({ suggest = null, opponent = null } = {}) {
   setupForm.elements.opponent.value = opponent ?? (suggest && !hasSavedGame ? suggest : settings.opponent);
   setupForm.elements.color.value = String(settings.humanColor);
   setupForm.elements.think.value = settings.think;
+  setupForm.elements.size.value = String(settings.size);
   syncSegments();
   openDialog(setupDialog);
 }
@@ -485,6 +509,7 @@ function openSetup({ suggest = null, opponent = null } = {}) {
 function startGame() {
   cancelAI();
   closeDialog(resultDialog);
+  applySize(vsAI() ? AI_SIZE : settings.size);
   history = [{ board: emptyBoard(), move: null, value: null }];
   ui.pending = null;
   ui.error = null;
@@ -494,6 +519,15 @@ function startGame() {
   if (route === "play") playIntro();
   render();
   afterMove();
+}
+
+/** Switch the game, and the board drawing, to an n × n board. */
+function applySize(n) {
+  setSize(n);
+  view.resize(n);
+  ui.pending = null;
+  ui.hover = null;
+  ui.focus = centerCell();
 }
 
 function openResult() {
@@ -561,7 +595,12 @@ setupForm.addEventListener("submit", async (event) => {
     opponent: form.get("opponent"),
     humanColor: Number(form.get("color")) === 2 ? 2 : 1,
     think: form.get("think"),
+    size: AI_SIZE,
   };
+  if (settings.opponent === "human") {
+    const size = Number(form.get("size"));
+    settings.size = SIZES.includes(size) ? size : AI_SIZE;
+  }
   startGame();
   await closeDialog(setupDialog);
   go("play");
@@ -622,7 +661,7 @@ let eggFresh = false;
 function gameSummary() {
   const pos = position();
   if (!hasSavedGame || pos.terminal || history.length < 2) return null;
-  const against = vsAI() ? `对阵${levelName()}` : "双人对局";
+  const against = vsAI() ? `对阵${levelName()}` : `双人对局 · ${N}×${N}`;
   return { label: `第 ${pos.moveNumber} 手 · ${against}` };
 }
 
@@ -717,6 +756,8 @@ addEventListener("hashchange", () => show(routeFromHash()));
 // ---------- Boot ----------
 
 hasSavedGame = restore();
+view.resize(N);
+ui.focus = centerCell();
 render();
 show(routeFromHash());
 connect().then(() => {
