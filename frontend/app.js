@@ -480,12 +480,6 @@ function closeDialog(dialog) {
 
 function syncOpponentOptions() {
   const seg = $("#opponent-seg");
-  const classic = seg.querySelector('input[value="classic"]')?.closest("label");
-  if (!classic) {
-    const label = document.createElement("label");
-    label.innerHTML = '<input type="radio" name="opponent" value="classic"><span>电脑</span>';
-    seg.insertBefore(label, seg.querySelector("label:last-of-type"));
-  }
   const size = Number(setupForm.elements.size.value);
   const neural = ["level1", "level3", "best"];
   const selected = setupForm.elements.opponent.value;

@@ -542,6 +542,7 @@ dialog h2 {
   cursor: pointer;
   white-space: nowrap;
 }
+.seg label[hidden] { display: none; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); }
 .seg label:has(input:checked) { font-weight: 600; }
@@ -553,7 +554,7 @@ dialog h2 {
   background: var(--thumb);
   box-shadow: var(--thumb-shadow);
   transform: translateX(calc(100% * var(--index)));
-  transition: transform 0.38s var(--ease-out);
+  transition: transform 0.38s var(--ease-out), width 0.38s var(--ease-out);
 }
 
 .collapse {
