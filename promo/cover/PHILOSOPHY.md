@@ -1,0 +1,13 @@
+# Quiet Offering · 静赠
+
+**A movement for images that persuade by giving one thing away and keeping everything else still.**
+
+Space comes first and is treated as a material rather than an absence. The ground is a pale, even field without grain or vignette, and every form is set into it the way a stone is set onto a board: deliberately, once, with no correction visible. Forms are few and complete: perfect circles, the soft-waisted bridge that joins two of them, a rounded tablet of quiet water. Nothing floats without a reason to be where it is. The emptiness around an object is measured as carefully as the object itself, and the result should read as the product of painstaking attention, with every interval calibrated by someone who has spent years learning how little an image needs.
+
+Colour is rationed. Two values carry the whole world, a deep ink and a soft white, each with a faint shadow so that they sit on the surface instead of being printed on it. A single saturated blue is allowed, and it is spent once: on the one element the eye must find first. When that blue appears it should feel like a quiet verdict, not decoration. Gradients, glows and particles are refused outright. Material honesty matters more than effect, and the restraint itself must look like master-level execution rather than an unfinished draft.
+
+Scale does the speaking. One element is allowed to be very large and everything else becomes small and exact around it, so the hierarchy is legible at a glance and from across a room, or at the size of a thumbnail. Rhythm comes from repetition of the same unit (the same circle, the same spacing, the same grid pitch), so that the one place where the pattern changes becomes the entire story. The composition should reward a second look: someone who studies it should discover that the arrangement is not arbitrary, that every position was chosen, counted and checked.
+
+Balance is asymmetric but settled. Heavy masses are allowed to run off an edge if that makes the frame feel larger than itself; type is anchored to a strict margin and never competes with the figure. Alignment is absolute: baselines, cell pitches and margins share one system, refined over countless iterations until nothing can be nudged by a pixel without the whole image complaining.
+
+Words are few and set as part of the architecture. A short line in a confident sans-serif, a smaller line in a quieter grey, a signature in the corner. Never a paragraph, never a list. The text names what the image has already shown, and then gets out of the way. The finished work should look meticulously crafted, the product of deep expertise, as if it had been laboured over for weeks by the best in the field and then simplified one last time.

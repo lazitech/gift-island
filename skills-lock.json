@@ -7,6 +7,12 @@
       "computedHash": "031ed3d7176bd3808b031595bd2d5b46072375b54a23a78c02e5cdc137191c90",
       "ref": "06379432a9243c951dfcc051153be18d2d261044"
     },
+    "canvas-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "01c46070358b5b9a86a6695e9f0fa5e361d889fb4328aec4454083abaa4a536c",
+      "ref": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba"
+    },
     "hyperframes": {
       "source": "heygen-com/hyperframes",
       "sourceType": "github",

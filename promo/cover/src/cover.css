@@ -1,0 +1,7 @@
+/* Cover type, on top of the film's tokens (film.css). */
+.dir { position: absolute; inset: 0; overflow: hidden; }
+.t { position: absolute; margin: 0; white-space: pre-line; }
+.t.head { font-family: var(--head); font-weight: 600; color: var(--ink); line-height: 1.18; letter-spacing: -0.01em; }
+#root.en .t.head { letter-spacing: -0.025em; }
+.t.sub { font-family: var(--body); color: var(--ink-2); line-height: 1.4; }
+.t.brand { font-family: var(--num); font-weight: 500; color: var(--ink-2); letter-spacing: 0.01em; }

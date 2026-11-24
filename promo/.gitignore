@@ -14,3 +14,9 @@ film/vertical/assets/
 brag-output/work/assets/brag.js
 brag-output/work/assets/film-data.js
 brag-output/work/assets/fonts/
+
+# cover: generated per-language/format projects and the licensed font subset
+cover/zh-*/
+cover/en-*/
+cover/.fonts/
+cover/renders/
