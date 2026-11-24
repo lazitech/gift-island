@@ -7,7 +7,7 @@
   const BPM = 90;
   const BEAT = 60 / BPM; // 0.667 s = 20 frames at 30 fps
   const b = (n) => Math.round(n * BEAT * 30) / 30; // beat index → time, snapped to a frame
-  const DURATION = 45;
+  const DURATION = 50;
 
   // ---------------------------------------------------------------- glyphs (frontend/glyphs.js)
   function line([r0, c0], [r1, c1]) {
@@ -136,155 +136,172 @@
   // ---------------------------------------------------------------- scene times
   const T = {
     s1: [0, b(10)],
-    game: [b(10), b(59)], // the 7 × 7 board, shots 2–5
-    s2: [b(10), b(20)],
-    s3: [b(20), b(30)],
-    s4: [b(30), b(48)],
-    s5: [b(48), b(59)],
-    s6: [b(59), DURATION],
+    game: [b(10), b(66)], // the 7 × 7 board, shots 2–5
+    s2: [b(10), b(22)],
+    s3: [b(22), b(36)],
+    s4: [b(36), b(52)],
+    s5: [b(52), b(66)],
+    s6: [b(66), DURATION],
   };
 
   // Title (shot 1): one stroke per sixteenth from beat 1; stones of a stroke 30 ms apart.
   const title = titleStones();
   const TITLE_TIMES = { dots: 0, strokeStart: b(1), strokeStep: BEAT / 4, stoneStep: 0.03, caption: b(7) };
-  // End card (shot 6): the same title written as a glissando into the final chord.
-  const MARK_TIMES = { dots: b(59), strokeStart: b(59) + 0.06, strokeStep: (b(60) - b(59) - 0.12) / title.strokes, stoneStep: 0.012 };
+  // End card (shot 6): the same title written in the bar before the final chord (bar 17, 45.3 s).
+  const MARK_TIMES = { dots: b(66), strokeStart: b(66.5), strokeStep: (b(68) - b(66.5) - 0.15) / title.strokes, stoneStep: 0.012 };
 
-  // Placements on the game board: {cell, color, land, launch, from, move}.
-  const placements = [];
+  const placements = []; // {cell, color, land, launch, from, move}
   const notes = [];
-  const lastMarks = []; // {t, cells}
+  const lastMarks = []; // {t, cells: [a, b|null] | null}
+  const lit = []; // {t, cells, color, hold}
+  const counters = []; // {t, color, value | preview | show | hide}
+  const dims = []; // {color, t0, t1, from, to}
+  const badges = []; // {cell, label, t0, t1}: a numbered sticker on an island while it is counted
+  const islandCenter = (cells) => {
+    const cy = cells.reduce((s, i) => s + Math.floor(i / N), 0) / cells.length;
+    const cx = cells.reduce((s, i) => s + (i % N), 0) / cells.length;
+    return cells.reduce((best, i) => {
+      const d = (Math.floor(i / N) - cy) ** 2 + ((i % N) - cx) ** 2;
+      return d < best.d ? { i, d } : best;
+    }, { i: cells[0], d: Infinity }).i;
+  };
 
-  function place(moveIndex, t, { travel = 0.333, gap = BEAT / 4, quiet = false, marks = false } = {}) {
+  /** A move as it is played: your own stone, then — a beat later — the one you give away. */
+  function place(moveIndex, t, { gap = BEAT, quiet = false, marks = false } = {}) {
     const [self, gift] = MOVES[moveIndex];
     const color = moveIndex % 2 === 0 ? 1 : 2;
     placements.push({ cell: self, color, land: t, launch: t, from: null, move: moveIndex + 1 });
-    const land = t + gap + travel;
-    placements.push({ cell: gift, color: 3 - color, land, launch: t + gap, from: self, move: moveIndex + 1 });
+    placements.push({ cell: gift, color: 3 - color, land: t + gap, launch: t + gap, from: null, move: moveIndex + 1 });
     notes.push({ t, role: "self", move: moveIndex + 1, quiet });
-    notes.push({ t: land, role: "gift", move: moveIndex + 1, quiet });
-    if (marks) lastMarks.push({ t: land, cells: [self, gift] });
+    if (!quiet) notes.push({ t: t + gap, role: "gift", move: moveIndex + 1 });
+    if (marks) lastMarks.push({ t: t + gap, cells: [self, gift] });
   }
 
-  // Shot 2: three slow moves, then seven quick ones.
-  place(0, b(12), { travel: BEAT / 2, gap: BEAT / 4, marks: true });
-  place(1, b(14), { travel: BEAT / 2, gap: BEAT / 4, marks: true });
-  place(2, b(16), { travel: BEAT / 2, gap: BEAT / 4, marks: true });
-  for (let k = 3; k < 10; k++) place(k, b(17.5 + 0.25 * (k - 3)), { travel: BEAT / 8, gap: 0.03, quiet: true });
-  lastMarks.push({ t: b(17.5), cells: null });
+  // Shot 2: three moves at playing speed, then seven more, a half-beat each.
+  place(0, b(12), { marks: true });
+  place(1, b(14), { marks: true });
+  place(2, b(16), { marks: true });
+  lastMarks.push({ t: b(17.75), cells: null });
+  for (let k = 3; k < 10; k++) place(k, b(18 + 0.5 * (k - 3)), { gap: BEAT / 4, quiet: true });
 
-  // Shot 3: count black's islands, biggest first, one per beat.
+  // Shot 3: what an island is. Light each black island and leave a numbered badge on it.
   const mid = boardAfter(10);
   const blackMid = islandsOf(mid, 1);
-  const order3 = [at(0, 2), at(1, 0), at(5, 1), at(4, 5), at(6, 3)].map((c) => blackMid.find((isl) => isl.includes(c)));
-  const lit = []; // {t, cells, color}
-  const counters = []; // {t, color, value, preview?}
-  const dims = []; // {color, t0, t1, to}
-  dims.push({ color: 2, t0: b(21.5), t1: b(21.5) + 0.4, from: 1, to: 0.16 });
-  dims.push({ color: 2, t0: b(28.5), t1: b(28.5) + 0.4, from: 0.16, to: 1 });
-  counters.push({ t: b(23), color: 1, show: true });
-  order3.forEach((cells, k) => {
-    lit.push({ t: b(23 + k), cells, color: 1 });
-    counters.push({ t: b(23 + k), color: 1, value: k + 1 });
-    notes.push({ t: b(23 + k), role: "count", step: k });
+  const isl = (r, c, board = mid, color = 1) => islandsOf(board, color).find((x) => x.includes(at(r, c)));
+  dims.push({ color: 2, t0: b(23), t1: b(23) + 0.4, from: 1, to: 0.16 });
+  dims.push({ color: 2, t0: b(35), t1: b(35) + 0.4, from: 0.16, to: 1 });
+  counters.push({ t: b(24.5), color: 1, show: true });
+  const count3 = [
+    [isl(0, 2), b(24.5)], // the big one: side-by-side stones, joined by bridges
+    [isl(5, 1), b(26)], // a pair …
+    [isl(6, 3), b(27)], // … and the stone touching it only at a corner: a separate island
+    [isl(1, 0), b(30.5)],
+    [isl(4, 5), b(31.5)],
+  ];
+  count3.forEach(([cells, t], k) => {
+    lit.push({ t, cells, color: 1, hold: 0.45 });
+    badges.push({ cell: islandCenter(cells), label: k + 1, t0: t, t1: b(35.5) });
+    counters.push({ t, color: 1, value: k + 1 });
+    notes.push({ t, role: "count", step: k });
   });
-  counters.push({ t: b(29.25), color: 1, hide: true });
+  const diagonal = { a: at(5, 2), b: at(6, 3), t0: b(27.5), t1: b(29.75) };
+  notes.push({ t: diagonal.t0, role: "diag" });
+  counters.push({ t: b(35.25), color: 1, hide: true });
+  void blackMid;
 
   // Shot 4: white's three islands, then the gift that joins two of them.
-  const whiteMid = islandsOf(mid, 2);
-  dims.push({ color: 1, t0: b(30.5), t1: b(30.5) + 0.4, from: 1, to: 0.16 });
-  dims.push({ color: 1, t0: b(32.5), t1: b(32.5) + 0.4, from: 0.16, to: 1 });
-  counters.push({ t: b(31), color: 2, show: true });
+  const whiteMid = [isl(3, 0, mid, 2), isl(3, 4, mid, 2), isl(5, 5, mid, 2)];
+  dims.push({ color: 1, t0: b(36.5), t1: b(36.5) + 0.4, from: 1, to: 0.16 });
+  dims.push({ color: 1, t0: b(39), t1: b(39) + 0.4, from: 0.16, to: 1 });
+  counters.push({ t: b(37.25), color: 2, show: true });
   whiteMid.forEach((cells, k) => {
-    lit.push({ t: b(31 + 0.5 * k), cells, color: 2 });
-    counters.push({ t: b(31 + 0.5 * k), color: 2, value: k + 1 });
-    notes.push({ t: b(31 + 0.5 * k), role: "count", step: k + 2 });
+    const t = b(37.25 + 0.5 * k);
+    lit.push({ t, cells, color: 2, hold: 0.35 });
+    badges.push({ cell: islandCenter(cells), label: k + 1, t0: t, t1: b(45.25) });
+    counters.push({ t, color: 2, value: k + 1 });
+    notes.push({ t, role: "count", step: k + 2 });
   });
   const KEY = MOVES[10];
-  placements.push({ cell: KEY[0], color: 1, land: b(33), launch: b(33), from: null, move: 11 });
-  notes.push({ t: b(33), role: "self", move: 11 });
-  const ghost = {
-    from: KEY[0], corner: GHOST_CORNER, target: KEY[1],
-    appear: b(33.5), arrive: b(34), // slides out of the black stone into the corner
-    glide: b(36), reach: b(37), // corner → the gap
-    commit: b(38),
-  };
-  counters.push({ t: b(34.25), color: 2, preview: 4 });
-  counters.push({ t: b(37), color: 2, preview: 2 });
-  notes.push({ t: b(34), role: "ghost" });
-  notes.push({ t: b(37), role: "ghost" });
+  placements.push({ cell: KEY[0], color: 1, land: b(40), launch: b(40), from: null, move: 11 });
+  lastMarks.push({ t: b(40), cells: [KEY[0], null] });
+  notes.push({ t: b(40), role: "self", move: 11 });
+  // The gift under consideration appears where it could go — first a corner, then the gap — as the
+  // game's preview stone with its pending ring. It never slides.
+  const ghost = { corner: GHOST_CORNER, target: KEY[1], cornerIn: b(41), cornerOut: b(42.75), targetIn: b(43), commit: b(44.5) };
+  counters.push({ t: b(41.25), color: 2, preview: 4 });
+  counters.push({ t: b(43.25), color: 2, preview: 2 });
+  notes.push({ t: ghost.cornerIn, role: "ghost", high: true });
+  notes.push({ t: ghost.targetIn, role: "ghost" });
   placements.push({ cell: KEY[1], color: 2, land: ghost.commit, launch: ghost.commit, from: null, move: 11, fromGhost: true });
   lastMarks.push({ t: ghost.commit, cells: [KEY[0], KEY[1]] });
   notes.push({ t: ghost.commit, role: "key" });
   const afterKey = boardAfter(11);
-  const joined = islandsOf(afterKey, 2).find((isl) => isl.includes(KEY[1]));
-  lit.push({ t: b(39), cells: joined, color: 2, hold: 0.9 });
-  counters.push({ t: b(39), color: 2, value: 2, preview: null });
-  notes.push({ t: b(39), role: "join" });
+  const joined = isl(3, 3, afterKey, 2);
+  lit.push({ t: b(45.25), cells: joined, color: 2, hold: 0.9 });
+  badges.push({ cell: islandCenter(joined), label: 1, t0: b(45.25), t1: b(51.5) });
+  badges.push({ cell: islandCenter(whiteMid[2]), label: 2, t0: b(45.25), t1: b(51.5) });
+  counters.push({ t: b(45.25), color: 2, value: 2, preview: null });
+  notes.push({ t: b(45.25), role: "join" });
   // Black still holds five: the gift cost black nothing.
-  counters.push({ t: b(42), color: 1, show: true });
-  counters.push({ t: b(42), color: 1, value: islandsOf(afterKey, 1).length });
-  notes.push({ t: b(42), role: "count", step: 4 });
-  lastMarks.push({ t: b(47), cells: null });
-  counters.push({ t: b(47.5), color: 2, hide: true });
-  counters.push({ t: b(47.5), color: 1, hide: true });
+  counters.push({ t: b(47.5), color: 1, show: true });
+  counters.push({ t: b(47.5), color: 1, value: islandsOf(afterKey, 1).length });
+  lastMarks.push({ t: b(51.5), cells: null });
+  counters.push({ t: b(51.5), color: 2, hide: true });
+  counters.push({ t: b(51.5), color: 1, hide: true });
 
-  // Shot 5: thirteen quick moves fill the board, then both sides count.
-  for (let k = 11; k < 24; k++) place(k, b(49 + 0.25 * (k - 11)), { travel: BEAT / 8, gap: 0.03, quiet: true });
+  // Shot 5: thirteen moves fill the board, a half-beat each, then both sides are counted.
+  for (let k = 11; k < 24; k++) place(k, b(53 + 0.5 * (k - 11)), { gap: BEAT / 4, quiet: true });
   const final = boardAfter(24);
   const finalIslands = { 1: islandsOf(final, 1), 2: islandsOf(final, 2) };
-  const holeRing = { cell: HOLE, t: b(52.5) };
-  notes.push({ t: b(52.5), role: "ring" });
-  counters.push({ t: b(53), color: 1, show: true });
-  counters.push({ t: b(53.25), color: 2, show: true });
-  const seq = [];
-  for (let k = 0; k < Math.max(finalIslands[1].length, finalIslands[2].length); k++) {
-    if (k < finalIslands[1].length) seq.push([1, finalIslands[1][k], k + 1]);
-    if (k < finalIslands[2].length) seq.push([2, finalIslands[2][k], k + 1]);
-  }
-  seq.forEach(([color, cells, value], j) => {
-    const t = b(53 + 0.25 * j);
-    lit.push({ t, cells, color, hold: 0.35 });
-    counters.push({ t, color, value });
-    notes.push({ t, role: "final-count", step: j });
+  const holeRing = { cell: HOLE, t: b(60) };
+  notes.push({ t: holeRing.t, role: "ring" });
+  const winner = { t: b(64.5), color: 1 };
+  [[1, b(61)], [2, b(63)]].forEach(([color, t0]) => {
+    counters.push({ t: t0, color, show: true });
+    finalIslands[color].forEach((cells, k) => {
+      const t = t0 + k * BEAT / 4;
+      lit.push({ t, cells, color, hold: 0.3 });
+      badges.push({ cell: islandCenter(cells), label: k + 1, t0: t, t1: color === winner.color ? b(65.5) : winner.t });
+      counters.push({ t, color, value: k + 1 });
+      notes.push({ t, role: "final-count", step: k, color });
+    });
   });
-  const winner = { t: b(56.5), color: 1 };
   dims.push({ color: 2, t0: winner.t, t1: winner.t + 0.5, from: 1, to: 0.28 });
   notes.push({ t: winner.t, role: "win" });
 
   // Shot 6: the mark writes itself; the button lands on the final chord.
-  title.strokes && notes.push({ t: b(60), role: "final" });
-  for (let s = 0; s < title.strokes; s++) notes.push({ t: MARK_TIMES.strokeStart + s * MARK_TIMES.strokeStep, role: "gliss", step: s, quiet: true });
+  notes.push({ t: b(68), role: "final" });
   for (let s = 0; s < title.strokes; s++) notes.push({ t: TITLE_TIMES.strokeStart + s * TITLE_TIMES.strokeStep, role: "stroke", step: s });
 
   // ---------------------------------------------------------------- copy, per shot
+  // [headline, subline, second subline (shot 3 only)]; "/" breaks a line.
   const COPY = {
     zh: {
       s1: ["Gift Islands", ""],
-      s2: ["一手，两子。", "一枚给自己，/一枚送对方。"],
-      s3: ["相连成岛。", "一岛一分，/不论大小。"],
+      s2: ["一手，两子。", "先下自己的，/再送对方一枚。"],
+      s3: ["相连成岛。", "上下左右相连，/才算同一座岛。", "一岛一分，/不论大小。"],
       s4: ["送出的子，/也能连起对方的岛。", "送对位置，/对方反而少一座岛。"],
       s5: ["下满即止。", "岛多者胜。"],
       s6: ["giftislands.top", "三档 AI，随时对弈"],
     },
     en: {
       s1: ["Gift Islands", ""],
-      s2: ["One move. /Two stones.", "One for you, /one for your opponent."],
-      s3: ["Connected stones /make an island.", "Every island scores one, /big or small."],
+      s2: ["One move. /Two stones.", "One for you, /then one for your opponent."],
+      s3: ["Connected stones /make an island.", "Side by side connects. /Corner to corner doesn't.", "Every island scores one, /big or small."],
       s4: ["A gift can join /their islands.", "Give it in the right place, /and they lose one."],
       s5: ["Fill the board.", "Most islands wins."],
       s6: ["giftislands.top", "Three AI levels, any time."],
     },
   };
 
-  // When each shot's copy enters and leaves: [headline in, subline in, both out].
+  // [headline in, subline in, both out, second subline in (replacing the first)].
   const COPY_TIMES = {
     s1: [TITLE_TIMES.caption, null, b(9.5)],
-    s2: [b(10.5), b(12.5), b(19.5)],
-    s3: [b(20.25), b(21.75), b(29.5)],
-    s4: [b(30.25), b(40), b(47.5)],
-    s5: [b(48.25), b(54), b(58.5)],
-    s6: [b(60), b(60.5), null],
+    s2: [b(10.5), b(12.5), b(21.5)],
+    s3: [b(22.25), b(23.5), b(35.5), b(30)],
+    s4: [b(36.25), b(46), b(51.5)],
+    s5: [b(52.25), b(60.5), b(65.5)],
+    s6: [b(68), b(68.5), null],
   };
 
   // ---------------------------------------------------------------- harmony: one chord per bar
@@ -305,7 +322,10 @@
     { name: "Gm7-C", root: 43, tones: [G - 12, Bb - 12, D, F] },
     { name: "Fmaj7", root: 41, tones: [F, A, C, E] },
     { name: "Dm9", root: 38, tones: [D - 12, F, A, C, E] },
+    { name: "Bbmaj7", root: 46, tones: [Bb - 12, D, F, A] },
+    { name: "Am7", root: 45, tones: [A - 12, C, E, G] },
     { name: "C9sus", root: 48, tones: [C - 12, F, G, Bb, D + 12] },
+    { name: "Fadd9", root: 41, tones: [F, A, C, G + 12, A + 12], final: true },
     { name: "Fadd9", root: 41, tones: [F, A, C, G + 12, A + 12], final: true },
     { name: "Fadd9", root: 41, tones: [F, A, C, G + 12, A + 12], final: true },
   ];
@@ -313,7 +333,7 @@
   const data = {
     BPM, BEAT, DURATION, FPS: 30, b,
     N, MOVES, HOLE, TITLE, title, TITLE_TIMES, MARK_TIMES, T,
-    placements, lit, counters, dims, ghost, lastMarks, holeRing, winner,
+    placements, lit, counters, dims, ghost, lastMarks, holeRing, winner, badges, diagonal,
     finalScore: { 1: finalIslands[1].length, 2: finalIslands[2].length },
     notes: notes.sort((x, y) => x.t - y.t),
     COPY, COPY_TIMES, BARS,

@@ -154,17 +154,42 @@
       return { x, y, r: STONE_R * (s0 + (1 - s0) * spring(prog(t, s.land, 0.5))), op: s.from != null || s.fromGhost ? 1 : clamp((t - s.land) / 0.14) };
     }
 
+    // The gift being considered: shown in place on one cell, then on another, as a player hovering
+    // the board would see it. Nothing slides.
     function ghostGeom(t) {
       const g = opts.ghost;
-      if (!g || t < g.appear || t >= g.commit) return null;
-      const [ax, ay] = center(g.from), [cx, cy] = center(g.corner), [tx, ty] = center(g.target);
-      if (t < g.arrive) {
-        const p = easeOut(prog(t, g.appear, g.arrive - g.appear));
-        return { x: ax + (cx - ax) * p, y: ay + (cy - ay) * p - Math.sin(Math.PI * p) * 40, r: STONE_R * (0.55 + 0.39 * p), op: 0.9 * clamp((t - g.appear) / 0.08), at: null };
-      }
-      if (t < g.glide) return { x: cx, y: cy, r: STONE_R * 0.94, op: 0.9, at: g.corner };
-      const p = inOut(prog(t, g.glide, g.reach - g.glide));
-      return { x: cx + (tx - cx) * p, y: cy + (ty - cy) * p, r: STONE_R * 0.94, op: 0.9, at: p >= 1 ? g.target : null };
+      if (!g) return null;
+      let cell, t0, t1;
+      if (t >= g.cornerIn && t < g.cornerOut) { cell = g.corner; t0 = g.cornerIn; t1 = g.cornerOut; }
+      else if (t >= g.targetIn && t < g.commit) { cell = g.target; t0 = g.targetIn; t1 = g.commit; }
+      else return null;
+      const [x, y] = center(cell);
+      const p = prog(t, t0, 0.4);
+      const out = cell === g.corner ? ease(prog(t, t1 - 0.22, 0.22)) : 0; // the corner one fades; the target one becomes the stone
+      return { x, y, r: STONE_R * (0.6 + 0.34 * spring(p)), op: 0.9 * clamp(p / 0.3) * (1 - out), at: cell, ring: p, ringOp: clamp(p / 0.45) * (1 - out) };
+    }
+
+    // Numbered stickers on islands as they are counted, and the corner-to-corner demonstration.
+    const gBadges = el("g", {}, svg);
+    const badgeNodes = (opts.badges || []).map((bd) => {
+      const [cx, cy] = center(bd.cell);
+      const g = el("g", { class: "badge", opacity: 0 }, gBadges);
+      el("circle", { cx: 0, cy: 0, r: 23 }, g);
+      const tx = el("text", { x: 0, y: 1 }, g);
+      tx.textContent = bd.label;
+      return { bd, g, cx, cy };
+    });
+    let diag = null;
+    if (opts.diagonal) {
+      const [ax, ay] = center(opts.diagonal.a), [bx, by] = center(opts.diagonal.b);
+      const g = el("g", { class: "diag", opacity: 0 }, svg);
+      const line = el("line", { class: "path", x1: ax, y1: ay, x2: ax, y2: ay }, g);
+      const mx = (ax + bx) / 2, my = (ay + by) / 2;
+      const xg = el("g", {}, g);
+      el("circle", { cx: 0, cy: 0, r: 19 }, xg);
+      el("line", { class: "x", x1: -7, y1: -7, x2: 7, y2: 7 }, xg);
+      el("line", { class: "x", x1: -7, y1: 7, x2: 7, y2: -7 }, xg);
+      diag = { g, line, xg, ax, ay, bx, by, mx, my };
     }
 
     function render(t) {
@@ -176,7 +201,7 @@
         let s = easeOut(p), o = p > 0 ? easeOut(p) : 0;
         const st = byCell.get(dot.i);
         if (st && t >= st.land) { const q = easeOut(prog(t, st.land, 0.3)); s *= 1 - q; o *= 1 - q; }
-        if (g && g.at === dot.i) { s = 0; o = 0; }
+        if (g && g.at === dot.i) { const k = 1 - clamp(g.op / 0.5); s *= k; o *= k; }
         dot.node.setAttribute("r", (5 * s).toFixed(2));
         dot.node.setAttribute("opacity", o.toFixed(3));
       }
@@ -211,24 +236,45 @@
           ghostNode.setAttribute("cy", g.y.toFixed(2));
           ghostNode.setAttribute("r", g.r.toFixed(2));
           ghostNode.setAttribute("opacity", g.op.toFixed(3));
-          const rp = prog(t, opts.ghost.arrive - 0.1, 0.4);
           pendingNode.setAttribute("cx", g.x.toFixed(2));
           pendingNode.setAttribute("cy", g.y.toFixed(2));
-          pendingNode.setAttribute("r", (45 * (0.7 + 0.3 * spring(rp))).toFixed(2));
-          pendingNode.setAttribute("opacity", clamp(rp / 0.45).toFixed(3));
+          pendingNode.setAttribute("r", (45 * (0.7 + 0.3 * spring(g.ring))).toFixed(2));
+          pendingNode.setAttribute("opacity", g.ringOp.toFixed(3));
         }
       }
 
-      // The accent dots on the latest move's two stones, as in the game.
+      // The accent dots on the latest move's stones, as in the game (one dot while the gift is pending).
       let lm = null;
       for (const m of opts.lastMarks || []) if (t >= m.t) lm = m;
       lastNodes.forEach((node, k) => {
-        if (!lm || !lm.cells) { node.setAttribute("r", 0); return; }
+        if (!lm || !lm.cells || lm.cells[k] == null) { node.setAttribute("r", 0); return; }
         const [cx, cy] = center(lm.cells[k]);
         node.setAttribute("cx", cx);
         node.setAttribute("cy", cy);
         node.setAttribute("r", (7 * spring(prog(t, lm.t + 0.2, 0.35))).toFixed(2));
       });
+
+      for (const { bd, g: node, cx, cy } of badgeNodes) {
+        if (t < bd.t0) { node.setAttribute("opacity", 0); continue; }
+        const p = prog(t, bd.t0, 0.45), q = ease(prog(t, bd.t1, 0.3));
+        const sc = 0.4 + 0.6 * spring(p);
+        node.setAttribute("transform", `translate(${cx} ${cy})` + (Math.abs(sc - 1) < 1e-4 ? "" : ` scale(${sc.toFixed(4)})`));
+        node.setAttribute("opacity", (clamp(p / 0.3) * (1 - q)).toFixed(3));
+      }
+
+      if (diag) {
+        const d = opts.diagonal;
+        if (t < d.t0) diag.g.setAttribute("opacity", 0);
+        else {
+          const p = easeOut(prog(t, d.t0, 0.45));
+          diag.line.setAttribute("x2", (diag.ax + (diag.bx - diag.ax) * p).toFixed(2));
+          diag.line.setAttribute("y2", (diag.ay + (diag.by - diag.ay) * p).toFixed(2));
+          const xp = prog(t, d.t0 + 0.4, 0.4), xs = 0.3 + 0.7 * spring(xp);
+          diag.xg.setAttribute("transform", `translate(${diag.mx} ${diag.my})` + (Math.abs(xs - 1) < 1e-4 ? "" : ` scale(${xs.toFixed(4)})`));
+          diag.xg.setAttribute("opacity", clamp(xp / 0.25).toFixed(3));
+          diag.g.setAttribute("opacity", (1 - ease(prog(t, d.t1, 0.3))).toFixed(3));
+        }
+      }
 
       if (opts.ring && t >= opts.ring.t) {
         const [cx, cy] = center(opts.ring.cell);
@@ -272,6 +318,7 @@
   const gameBoard = Board(gameHost, D.N, D.N, D.placements, {
     introAt: D.T.game[0] + 0.12, dotStep: 0.028,
     lit: D.lit, dims: D.dims, lastMarks: D.lastMarks, ring: D.holeRing, ghost: D.ghost,
+    badges: D.badges, diagonal: D.diagonal,
   });
 
   const markHost = document.getElementById("s6-board");
@@ -292,6 +339,7 @@
     setLines(document.getElementById(`${s}-head`), COPY[s][0]);
     setLines(document.getElementById(`${s}-sub`), COPY[s][1]);
   }
+  setLines(document.getElementById("s3-sub2"), COPY.s3[2]); // shot 3's second point replaces its first
   document.getElementById("s1-head").textContent = LANG === "zh" ? "赠岛 · Gift Islands" : "Gift Islands";
   document.getElementById("s6-pill").textContent = COPY.s6[0];
   document.getElementById("s6-sub").textContent = COPY.s6[1];
@@ -306,7 +354,9 @@
       op *= 1 - q; b += 6 * q; sc = 1 - 0.015 * q;
     }
     node.style.opacity = op.toFixed(3);
-    node.style.transform = `translateY(${y.toFixed(2)}px) scale(${sc.toFixed(4)})`;
+    // Identity once landed: a lingering transform keeps the text on its own layer, rasterised
+    // differently by each render worker, and the line shimmers from frame to frame.
+    node.style.transform = y < 0.01 && sc > 0.9999 ? "none" : `translateY(${y.toFixed(2)}px) scale(${sc.toFixed(4)})`;
     node.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
   }
 
@@ -316,7 +366,7 @@
     if (tin != null) { const p = easeOut(prog(t, tin, 0.5)); op = p; sc = 1.012 - 0.012 * p; b = 6 * (1 - p); }
     if (tout != null && t >= tout) { const q = ease(prog(t, tout, 0.33)); op *= 1 - q; sc *= 1 - 0.015 * q; b += 4 * q; }
     node.style.opacity = op.toFixed(3);
-    node.style.transform = `scale(${sc.toFixed(4)})`;
+    node.style.transform = Math.abs(sc - 1) < 1e-4 ? "none" : `scale(${sc.toFixed(4)})`;
     node.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
   }
 
@@ -412,13 +462,14 @@
     titleBoard.render(t);
     riseOut(nodes.s1Head, t, CT.s1[0], null);
 
-    stage(nodes.gameStage, t, D.T.game[0], D.b(58.5));
+    stage(nodes.gameStage, t, D.T.game[0], D.b(65.5));
     gameBoard.render(t);
     for (const s of shots) {
       const [hin, sin, out] = CT[s];
       riseOut(document.getElementById(`${s}-head`), t, hin, out);
-      riseOut(document.getElementById(`${s}-sub`), t, sin, out);
+      riseOut(document.getElementById(`${s}-sub`), t, sin, CT[s][3] ?? out);
     }
+    riseOut(document.getElementById("s3-sub2"), t, CT.s3[3], CT.s3[2]);
     const winDim = ease(prog(t, D.winner.t, 0.5));
     for (const { shot, color, c } of counters) c.render(t, { winnerDim: shot === "s5" && color !== D.winner.color ? winDim : 0 });
 
@@ -426,7 +477,8 @@
     markBoard.render(t);
     const p = prog(t, CT.s6[0], 0.6);
     nodes.pill.style.opacity = (t < CT.s6[0] ? 0 : clamp(p / 0.4)).toFixed(3);
-    nodes.pill.style.transform = `scale(${(0.86 + 0.14 * spring(p)).toFixed(4)})`;
+    const ps = 0.86 + 0.14 * spring(p);
+    nodes.pill.style.transform = Math.abs(ps - 1) < 1e-4 ? "none" : `scale(${ps.toFixed(4)})`;
     nodes.pill.style.filter = p < 0.5 ? `blur(${(6 * (1 - p * 2)).toFixed(2)}px)` : "none";
     riseOut(nodes.s6Sub, t, CT.s6[1], null, { dy: 18, blur: 10 });
   }

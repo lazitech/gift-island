@@ -1,6 +1,6 @@
 // Synthesises the film's score from assets/film-data.js: a soft mallet (marimba-like) note on
-// every stone, a rising scale while islands are counted, a quiet pad and bass on a 90 BPM grid,
-// and a closing F add9 chord. No samples, so no licensing. Writes assets/music.wav, then a
+// every move, a rising scale while islands are counted, a quiet pad on a 90 BPM grid, and a
+// closing F add9 chord. Kept sparse on purpose: one note per move, no rhythm section. No samples, so no licensing. Writes assets/music.wav, then a
 // loudness-normalised assets/music.m4a (-16 LUFS, -1.5 dBTP) with ffmpeg.
 //
 //   node tools/music.cjs
@@ -22,7 +22,7 @@ const noise = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 
 function add(i, l, r) { if (i >= 0 && i < LEN) { L[i] += l; R[i] += r; } }
 
 /** A soft mallet: fundamental, the marimba's 4th partial and a short 10th, with a felt attack. */
-function mallet(t, midi, vel = 1, { pan = 0, decay = 1 } = {}) {
+function mallet(t, midi, vel = 1, { pan = 0, decay = 1, bright = 1 } = {}) {
   const f = hz(midi);
   const start = Math.round(t * SR);
   const low = Math.max(0, Math.min(1, (84 - midi) / 30));
@@ -34,10 +34,10 @@ function mallet(t, midi, vel = 1, { pan = 0, decay = 1 } = {}) {
     const x = k / SR;
     const att = Math.min(1, x / 0.003);
     let s = Math.sin(2 * Math.PI * f * x) * Math.exp(-x / tau1)
-      + 0.32 * Math.sin(2 * Math.PI * f * 3.98 * x) * Math.exp(-x / tau2)
-      + 0.10 * Math.sin(2 * Math.PI * f * 9.1 * x) * Math.exp(-x / tau3)
+      + 0.32 * bright * Math.sin(2 * Math.PI * f * 3.98 * x) * Math.exp(-x / tau2)
+      + 0.10 * bright * Math.sin(2 * Math.PI * f * 9.1 * x) * Math.exp(-x / tau3)
       + 0.12 * Math.sin(2 * Math.PI * f * 2 * x) * Math.exp(-x / (tau1 * 0.5));
-    if (k < 0.006 * SR) s += 0.18 * noise() * (1 - k / (0.006 * SR));
+    if (k < 0.006 * SR) s += 0.18 * bright * noise() * (1 - k / (0.006 * SR));
     s *= att * amp;
     add(start + k, s * gl, s * gr);
   }
@@ -77,8 +77,7 @@ D.BARS.forEach((bar, k) => {
   const t0 = k * BAR, t1 = Math.min(D.DURATION - 0.8, (k + 1) * BAR);
   if (t0 >= D.DURATION) return;
   const lvl = padLevel(t0 + 0.5) || (k === 1 ? 0.5 : 0);
-  if (lvl > 0 && !bar.final) for (const m of bar.tones) padNote(Math.max(t0, 4.0), t1, m, 0.016 * lvl);
-  if (k >= 3 && !bar.final) bass(t0, bar.root - 12 + 12, 0.07);
+  if (lvl > 0 && !bar.final) for (const m of bar.tones) padNote(Math.max(t0, 4.0), t1, m, 0.009 * lvl);
 });
 
 // ------------------------------------------------------------------ notes from the picture
@@ -104,32 +103,37 @@ for (const n of D.notes) {
       break;
     }
     case "self": case "gift": {
-      const tones = chordIn(t, 62, 79);
+      if (n.quiet) {
+        // Fast moves: one soft, dark note each, climbing the chord stepwise so the run reads as a line.
+        const tones = chordIn(t, 60, 74);
+        mallet(t, tones[n.move % tones.length], 0.3, { pan: n.move % 2 ? 0.12 : -0.12, decay: 0.7, bright: 0.35 });
+        break;
+      }
+      const tones = chordIn(t, 62, 77);
       const i = (n.move * 2) % tones.length;
-      const m = n.role === "self" ? tones[i] : tones[Math.min(tones.length - 1, i + 2)] ;
-      const vel = n.quiet ? (n.role === "self" ? 0.42 : 0.3) : (n.role === "self" ? 0.8 : 0.62);
-      mallet(t, m, vel, { pan: n.role === "self" ? -0.25 : 0.25, decay: n.quiet ? 0.6 : 1 });
+      const m = n.role === "self" ? tones[i] : tones[Math.min(tones.length - 1, i + 2)];
+      mallet(t, m, n.role === "self" ? 0.7 : 0.55, { pan: n.role === "self" ? -0.2 : 0.2, bright: 0.7 });
       break;
     }
-    case "count": mallet(t, pentFrom(72, n.step), 0.7, { pan: 0.1 }); break;
-    case "ghost": mallet(t, n.t < D.ghost.glide ? 86 : 81, 0.32, { pan: 0.35, decay: 1.4 }); break;
+    case "count": mallet(t, pentFrom(69, n.step), 0.55, { pan: 0.1, bright: 0.6 }); break;
+    case "diag": [74, 72].forEach((m, k) => mallet(t + 0.4 * k, m, 0.36, { pan: 0.1, bright: 0.5 })); break;
+    case "ghost": mallet(t, n.high ? 84 : 81, 0.26, { pan: 0.3, decay: 1.4, bright: 0.5 }); break;
     case "key": {
-      bass(t, 46 - 12, 0.16, 2.2, 3.2); // B♭1
-      mallet(t, 77, 0.85, { pan: 0 });
-      mallet(t + 0.012, 70, 0.5, { pan: -0.2 });
+      bass(t, 46 - 12, 0.11, 2.2, 3.2); // B♭1
+      mallet(t, 77, 0.7, { pan: 0, bright: 0.7 });
+      mallet(t + 0.012, 70, 0.42, { pan: -0.2, bright: 0.6 });
       break;
     }
-    case "join": [81, 84, 89].forEach((m, k) => mallet(t + k * D.BEAT / 8, m, 0.62 - 0.08 * k, { pan: 0.15 * k, decay: 1.6 })); break;
-    case "ring": mallet(t, 88, 0.3, { pan: 0.3, decay: 1.5 }); break;
-    case "final-count": mallet(t, pentFrom(65, n.step), 0.52 + 0.02 * n.step, { pan: n.step % 2 ? 0.25 : -0.25 }); break;
-    case "win": [60, 65, 67, 70].forEach((m, k) => mallet(t + k * 0.02, m, 0.5, { decay: 1.8 })); break;
-    case "gliss": mallet(t, pentFrom(65, Math.round(n.step * 12 / 22)), 0.28 + 0.01 * n.step, { pan: -0.4 + 0.035 * n.step, decay: 0.7 }); break;
+    case "join": [77, 81, 84].forEach((m, k) => mallet(t + k * D.BEAT / 4, m, 0.5 - 0.06 * k, { pan: 0.12 * k, decay: 1.6, bright: 0.6 })); break;
+    case "ring": mallet(t, 84, 0.24, { pan: 0.25, decay: 1.5, bright: 0.5 }); break;
+    // The closing count: black climbs on the left, white answers on the right, both soft.
+    case "final-count": mallet(t, pentFrom(n.color === 1 ? 65 : 62, n.step), 0.34, { pan: n.color === 1 ? -0.2 : 0.2, decay: 0.8, bright: 0.45 }); break;
+    case "win": [60, 65, 67, 70].forEach((m, k) => mallet(t + k * 0.03, m, 0.4, { decay: 1.8, bright: 0.5 })); break;
     case "final": {
       // F add9, rolled from the bass up, held to the end.
-      bass(t, 29, 0.22, 3.5, D.DURATION - t);
-      bass(t, 41, 0.1, 3.0, D.DURATION - t);
-      [53, 60, 65, 69, 72, 79, 81].forEach((m, k) => mallet(t + k * 0.028, m, 0.75 - 0.05 * k, { pan: -0.35 + 0.12 * k, decay: 2.4 }));
-      for (const m of [53, 57, 60, 67, 69, 72]) padNote(t, D.DURATION - 0.6, m, 0.02);
+      bass(t, 29, 0.15, 3.5, D.DURATION - t);
+      [53, 60, 65, 69, 72, 79].forEach((m, k) => mallet(t + k * 0.06, m, 0.6 - 0.05 * k, { pan: -0.3 + 0.12 * k, decay: 2.4, bright: 0.55 }));
+      for (const m of [53, 57, 60, 67, 69, 72]) padNote(t, D.DURATION - 0.6, m, 0.012);
       break;
     }
   }
@@ -165,7 +169,7 @@ const k = SR / 44100;
 const combsL = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617].map((d) => Math.round(d * k));
 const combsR = combsL.map((d) => d + 23);
 const aps = [556, 441, 341, 225].map((d) => Math.round(d * k));
-const outL = reverb(L, combsL, aps, 0.9), outR = reverb(R, combsR, aps.map((d) => d + 23), 0.9);
+const outL = reverb(L, combsL, aps, 0.6), outR = reverb(R, combsR, aps.map((d) => d + 23), 0.6);
 
 // Fade the tail into the last frame.
 for (let i = 0; i < LEN; i++) {

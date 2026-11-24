@@ -15,7 +15,7 @@ html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; backgro
   font-family: "PF", "IDF", sans-serif; -webkit-font-smoothing: antialiased;
 }
 #ground { position: absolute; inset: 0; background: var(--bg); }
-.stage { position: absolute; inset: 0; will-change: transform, opacity, filter; }
+.stage { position: absolute; inset: 0; }
 p { margin: 0; }
 
 .board { position: absolute; background: var(--sea); box-sizing: border-box; }

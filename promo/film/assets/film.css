@@ -61,7 +61,7 @@
 #ground { position: absolute; inset: 0; background: var(--bg); }
 
 .scene { position: absolute; inset: 0; }
-.stage { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform, filter, opacity; }
+.stage { position: absolute; inset: 0; transform-origin: 50% 50%; }
 
 /* ---------- Boards ---------- */
 
@@ -76,11 +76,20 @@
 .layer.l2 { filter: var(--shadow-white); }
 .ring { fill: none; stroke: var(--accent); stroke-width: 5; }
 .last { fill: var(--accent); }
+/* A numbered sticker on each island while it is counted. */
+.badge circle { fill: var(--accent); stroke: var(--accent-ink); stroke-width: 3.5; }
+.badge text { fill: var(--accent-ink); font-family: "Inter Display Film", sans-serif; font-weight: 600; font-size: 30px; text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
+/* Corner to corner: a dashed line with a cross, "not connected". */
+.diag line.path { stroke: var(--accent); stroke-width: 5; stroke-dasharray: 9 11; stroke-linecap: round; fill: none; }
+.diag circle { fill: var(--sea); stroke: var(--accent); stroke-width: 4; }
+.diag line.x { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
+.copy .subs { display: grid; }
+.copy .subs > .sub { grid-area: 1 / 1; }
 
 /* ---------- Copy ---------- */
 
 .copy { position: absolute; }
-.copy .head, .copy .sub { margin: 0; will-change: transform, filter, opacity; }
+.copy .head, .copy .sub { margin: 0; }
 .copy .head {
   font-family: var(--head);
   font-weight: 600;
@@ -97,7 +106,7 @@
 #root.en .copy .head { letter-spacing: -0.025em; }
 
 .counters { position: absolute; display: flex; gap: 84px; padding-left: 10px; }
-.counter { display: flex; align-items: center; gap: 22px; will-change: transform, filter, opacity; }
+.counter { display: flex; align-items: center; gap: 22px; }
 .chip { flex: none; border-radius: 50%; }
 /* A stone on its own patch of sea, so the black one reads on a black ground. */
 .chip.c1 { background: var(--black); box-shadow: var(--chip-black), 0 0 0 10px var(--sea); }
@@ -138,9 +147,9 @@
   font-family: "Inter Display Film", sans-serif;
   font-weight: 500;
   letter-spacing: -0.005em;
-  will-change: transform, opacity, filter;
+ 
 }
-#s6-sub { font-family: var(--body); color: var(--ink-2); will-change: transform, opacity, filter; }
+#s6-sub { font-family: var(--body); color: var(--ink-2); }
 
 /* ---------- Landscape 1920 × 1080 ---------- */
 

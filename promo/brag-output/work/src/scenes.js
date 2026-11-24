@@ -15,7 +15,7 @@
     if (tout != null && t >= tout) { const q = ease(prog(t, tout, 0.2)); op *= 1 - q; b += 8 * q; }
     node.style.opacity = op.toFixed(3);
     node.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
-    node.style.transform = `scale(${sc.toFixed(4)})`;
+    node.style.transform = Math.abs(sc - 1) < 1e-4 ? "none" : `scale(${sc.toFixed(4)})`;
   }
 
   // ---------- shot 2: the title in stones
@@ -32,15 +32,16 @@
 
   // ---------- shots 3–4: the game, faster than the film
   const placements = [], lit = [], dims = [], lastMarks = [];
-  const moveAt = (k, t, travel) => {
+  // Each move places its own stone, then the gift on its own cell a moment later. Nothing slides.
+  const moveAt = (k, t, gap) => {
     const [self, gift] = D.MOVES[k];
     const color = k % 2 === 0 ? 1 : 2;
     placements.push({ cell: self, color, land: t, launch: t, from: null });
-    placements.push({ cell: gift, color: 3 - color, land: t + 0.06 + travel, launch: t + 0.06, from: self });
-    return t + 0.06 + travel;
+    placements.push({ cell: gift, color: 3 - color, land: t + gap, launch: t + gap, from: null });
+    return t + gap;
   };
-  for (let k = 0; k < 6; k++) { const land = moveAt(k, bt(13 + k), 0.24); lastMarks.push({ t: land, cells: D.MOVES[k] }); }
-  for (let k = 6; k < 10; k++) moveAt(k, bt(21 + 0.25 * (k - 6)), 0.1);
+  for (let k = 0; k < 6; k++) { const land = moveAt(k, bt(13 + k), 0.3); lastMarks.push({ t: land, cells: D.MOVES[k] }); }
+  for (let k = 6; k < 10; k++) moveAt(k, bt(21 + 0.25 * (k - 6)), 0.16);
   lastMarks.push({ t: bt(21), cells: null });
   // white's three islands, then the gift in the gap
   const whiteIslands = [[21, 22, 23], [25, 26, 27], [40, 41, 47, 48]];
@@ -48,7 +49,7 @@
   whiteIslands.forEach((cells, k) => lit.push({ t: bt(22.5 + 0.5 * k), cells, color: 2, hold: 0.3 }));
   const KEY = D.MOVES[10];
   placements.push({ cell: KEY[0], color: 1, land: bt(24), launch: bt(24), from: null });
-  const ghost = { from: KEY[0], corner: KEY[1], target: KEY[1], appear: bt(24.5), arrive: bt(25.5), glide: bt(26), reach: bt(26) + 0.001, commit: bt(26) };
+  const ghost = { corner: KEY[1], target: KEY[1], cornerIn: bt(25.5), cornerOut: bt(25.5), targetIn: bt(25.5), commit: bt(26) };
   placements.push({ cell: KEY[1], color: 2, land: bt(26), launch: bt(26), from: null, fromGhost: true });
   lastMarks.push({ t: bt(26), cells: KEY });
   lit.push({ t: bt(26.5), cells: [21, 22, 23, 24, 25, 26, 27], color: 2, hold: 1.2 });
@@ -69,7 +70,8 @@
     let op = p, b = 12 * (1 - p);
     if (tout != null && t >= tout) { const q = ease(prog(t, tout, 0.22)); op *= 1 - q; b += 8 * q; }
     node.style.opacity = op.toFixed(3);
-    node.style.transform = `translateY(${(dy * (1 - p)).toFixed(2)}px)`;
+    // identity once landed, so the line is not left on a layer each render worker rasterises differently
+    node.style.transform = dy * (1 - p) < 0.01 ? "none" : `translateY(${(dy * (1 - p)).toFixed(2)}px)`;
     node.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
   }
   function swap(node, t, tin, tout) {
@@ -77,7 +79,7 @@
     if (tin != null) { const p = easeOut(prog(t, tin, 0.35)); op = p; sc = 1.03 - 0.03 * p; b = 10 * (1 - p); }
     if (tout != null && t >= tout) { const q = ease(prog(t, tout, 0.25)); op *= 1 - q; sc *= 1 - 0.03 * q; b += 8 * q; }
     node.style.opacity = op.toFixed(3);
-    node.style.transform = `scale(${sc.toFixed(4)})`;
+    node.style.transform = Math.abs(sc - 1) < 1e-4 ? "none" : `scale(${sc.toFixed(4)})`;
     node.style.filter = b > 0.05 ? `blur(${b.toFixed(2)}px)` : "none";
   }
 
@@ -120,7 +122,8 @@
     rise($("win"), t, bt(31.2), null);
     const q = prog(t, bt(34), 0.6);
     $("cta").style.opacity = t < bt(34) ? 0 : clamp(q / 0.4).toFixed(3);
-    $("cta").style.transform = `scale(${(0.85 + 0.15 * spring(q)).toFixed(4)})`;
+    const cs = 0.85 + 0.15 * spring(q);
+    $("cta").style.transform = Math.abs(cs - 1) < 1e-4 ? "none" : `scale(${cs.toFixed(4)})`;
     rise($("url"), t, bt(34.75), null, 16);
   }
 
