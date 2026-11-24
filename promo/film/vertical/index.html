@@ -15,7 +15,7 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="50" data-width="1080" data-height="1920">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="53" data-width="1080" data-height="1920">
       <div id="ground"></div>
 
       <!-- Shot 1: 赠岛 written in stones -->
@@ -27,13 +27,13 @@
       </section>
 
       <!-- Shots 2–5: one game on a 7 × 7 board -->
-      <section id="game" class="scene clip" data-start="6.667" data-duration="37.333" data-track-index="0" data-track-kind="graphics">
+      <section id="game" class="scene clip" data-start="6.667" data-duration="40" data-track-index="0" data-track-kind="graphics">
         <div class="stage">
           <div id="game-board" class="board"></div>
           <div class="copy" id="s2-copy"><p id="s2-head" class="head"></p><p id="s2-sub" class="sub"></p></div>
           <div class="copy" id="s3-copy"><p id="s3-head" class="head"></p><div class="subs" data-layout-allow-overlap><p id="s3-sub" class="sub"></p><p id="s3-sub2" class="sub"></p></div></div>
           <div class="copy" id="s4-copy"><p id="s4-head" class="head"></p><p id="s4-sub" class="sub"></p></div>
-          <div class="copy" id="s5-copy"><p id="s5-head" class="head"></p><p id="s5-sub" class="sub"></p></div>
+          <div class="copy" id="s5-copy"><div class="heads" data-layout-allow-overlap><p id="s5-head" class="head"></p><p id="s5-head2" class="head"></p></div><p id="s5-sub" class="sub"></p></div>
           <div class="counters" id="s3-counters"></div>
           <div class="counters" id="s4-counters"></div>
           <div class="counters" id="s5-counters"></div>
@@ -41,14 +41,14 @@
       </section>
 
       <!-- Shot 6: the end card -->
-      <section id="s6" class="scene clip" data-start="44" data-duration="6" data-track-index="0" data-track-kind="graphics">
+      <section id="s6" class="scene clip" data-start="46.667" data-duration="6.333" data-track-index="0" data-track-kind="graphics">
         <div class="stage">
           <div id="s6-board" class="board"></div>
           <div id="s6-copy"><div id="s6-pill" class="pill"></div><div id="s6-sub"></div></div>
         </div>
       </section>
 
-      <audio id="music" class="clip" src="assets/music.m4a" data-start="0" data-duration="50" data-track-index="2" data-volume="1"></audio>
+      <audio id="music" class="clip" src="assets/music.m4a" data-start="0" data-duration="53" data-track-index="2" data-volume="1"></audio>
     </div>
 
     <script src="assets/film-data.js"></script>

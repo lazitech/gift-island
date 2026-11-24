@@ -9,7 +9,7 @@
 | 2 | 一手两子 | 一手，两子。 | 先下自己的，/再送对方一枚。 | One move. Two stones. | One for you, / then one for your opponent. |
 | 3 | 岛怎么算 | 相连成岛。 | ① 上下左右相连，/才算同一座岛。<br>② 一岛一分，/不论大小。 | Connected stones / make an island. | ① Side by side connects. / Corner to corner doesn't.<br>② Every island scores one, / big or small. |
 | 4 | 送子连岛 | 送出的子，/也能连起对方的岛。 | 送对位置，/对方反而少一座岛。 | A gift can join / their islands. | Give it in the right place, / and they lose one. |
-| 5 | 终局 | 下满即止。 | 岛多者胜。 | Fill the board. | Most islands wins. |
+| 5 | 终局 | 下满即止。→ 黑方胜。 | 岛多者胜。 | Fill the board. → Black wins. | Most islands wins. |
 | 6 | 片尾 | （按钮）giftislands.top | 三档 AI，随时对弈 | (button) giftislands.top | Three AI levels, any time. |
 
 ## 计数标签

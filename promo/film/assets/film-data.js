@@ -7,7 +7,7 @@
   const BPM = 90;
   const BEAT = 60 / BPM; // 0.667 s = 20 frames at 30 fps
   const b = (n) => Math.round(n * BEAT * 30) / 30; // beat index → time, snapped to a frame
-  const DURATION = 50;
+  const DURATION = 53;
 
   // ---------------------------------------------------------------- glyphs (frontend/glyphs.js)
   function line([r0, c0], [r1, c1]) {
@@ -136,19 +136,19 @@
   // ---------------------------------------------------------------- scene times
   const T = {
     s1: [0, b(10)],
-    game: [b(10), b(66)], // the 7 × 7 board, shots 2–5
+    game: [b(10), b(70)], // the 7 × 7 board, shots 2–5
     s2: [b(10), b(22)],
     s3: [b(22), b(36)],
     s4: [b(36), b(52)],
-    s5: [b(52), b(66)],
-    s6: [b(66), DURATION],
+    s5: [b(52), b(70)],
+    s6: [b(70), DURATION],
   };
 
   // Title (shot 1): one stroke per sixteenth from beat 1; stones of a stroke 30 ms apart.
   const title = titleStones();
   const TITLE_TIMES = { dots: 0, strokeStart: b(1), strokeStep: BEAT / 4, stoneStep: 0.03, caption: b(7) };
-  // End card (shot 6): the same title written in the bar before the final chord (bar 17, 45.3 s).
-  const MARK_TIMES = { dots: b(66), strokeStart: b(66.5), strokeStep: (b(68) - b(66.5) - 0.15) / title.strokes, stoneStep: 0.012 };
+  // End card (shot 6): the same title written in the bar before the final chord (bar 18, 48.0 s).
+  const MARK_TIMES = { dots: b(70), strokeStart: b(70.5), strokeStep: (b(72) - b(70.5) - 0.15) / title.strokes, stoneStep: 0.012 };
 
   const placements = []; // {cell, color, land, launch, from, move}
   const notes = [];
@@ -261,16 +261,19 @@
     finalIslands[color].forEach((cells, k) => {
       const t = t0 + k * BEAT / 4;
       lit.push({ t, cells, color, hold: 0.3 });
-      badges.push({ cell: islandCenter(cells), label: k + 1, t0: t, t1: color === winner.color ? b(65.5) : winner.t });
+      badges.push({ cell: islandCenter(cells), label: k + 1, t0: t, t1: color === winner.color ? b(69.5) : winner.t });
       counters.push({ t, color, value: k + 1 });
       notes.push({ t, role: "final-count", step: k, color });
     });
   });
   dims.push({ color: 2, t0: winner.t, t1: winner.t + 0.5, from: 1, to: 0.28 });
   notes.push({ t: winner.t, role: "win" });
+  // The result holds for a bar: every winning island lights up together and the headline names the winner.
+  winner.lit = b(65);
+  lit.push({ t: winner.lit, cells: finalIslands[winner.color].flat(), color: winner.color, hold: b(69.5) - winner.lit - 0.12 });
 
   // Shot 6: the mark writes itself; the button lands on the final chord.
-  notes.push({ t: b(68), role: "final" });
+  notes.push({ t: b(72), role: "final" });
   for (let s = 0; s < title.strokes; s++) notes.push({ t: TITLE_TIMES.strokeStart + s * TITLE_TIMES.strokeStep, role: "stroke", step: s });
 
   // ---------------------------------------------------------------- copy, per shot
@@ -281,7 +284,7 @@
       s2: ["一手，两子。", "先下自己的，/再送对方一枚。"],
       s3: ["相连成岛。", "上下左右相连，/才算同一座岛。", "一岛一分，/不论大小。"],
       s4: ["送出的子，/也能连起对方的岛。", "送对位置，/对方反而少一座岛。"],
-      s5: ["下满即止。", "岛多者胜。"],
+      s5: ["下满即止。", "岛多者胜。", "黑方胜。"],
       s6: ["giftislands.top", "三档 AI，随时对弈"],
     },
     en: {
@@ -289,19 +292,19 @@
       s2: ["One move. /Two stones.", "One for you, /then one for your opponent."],
       s3: ["Connected stones /make an island.", "Side by side connects. /Corner to corner doesn't.", "Every island scores one, /big or small."],
       s4: ["A gift can join /their islands.", "Give it in the right place, /and they lose one."],
-      s5: ["Fill the board.", "Most islands wins."],
+      s5: ["Fill the board.", "Most islands wins.", "Black wins."],
       s6: ["giftislands.top", "Three AI levels, any time."],
     },
   };
 
-  // [headline in, subline in, both out, second subline in (replacing the first)].
+  // [headline in, subline in, both out, then shot 3: second subline in / shot 5: winner headline in].
   const COPY_TIMES = {
     s1: [TITLE_TIMES.caption, null, b(9.5)],
     s2: [b(10.5), b(12.5), b(21.5)],
     s3: [b(22.25), b(23.5), b(35.5), b(30)],
     s4: [b(36.25), b(46), b(51.5)],
-    s5: [b(52.25), b(60.5), b(65.5)],
-    s6: [b(68), b(68.5), null],
+    s5: [b(52.25), b(60.5), b(69.5), b(65.25)],
+    s6: [b(72), b(72.5), null],
   };
 
   // ---------------------------------------------------------------- harmony: one chord per bar
@@ -325,6 +328,7 @@
     { name: "Bbmaj7", root: 46, tones: [Bb - 12, D, F, A] },
     { name: "Am7", root: 45, tones: [A - 12, C, E, G] },
     { name: "C9sus", root: 48, tones: [C - 12, F, G, Bb, D + 12] },
+    { name: "Bbmaj7/C", root: 48, tones: [C - 12, Bb - 12, D, F, A] },
     { name: "Fadd9", root: 41, tones: [F, A, C, G + 12, A + 12], final: true },
     { name: "Fadd9", root: 41, tones: [F, A, C, G + 12, A + 12], final: true },
     { name: "Fadd9", root: 41, tones: [F, A, C, G + 12, A + 12], final: true },

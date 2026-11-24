@@ -340,6 +340,7 @@
     setLines(document.getElementById(`${s}-sub`), COPY[s][1]);
   }
   setLines(document.getElementById("s3-sub2"), COPY.s3[2]); // shot 3's second point replaces its first
+  setLines(document.getElementById("s5-head2"), COPY.s5[2]); // shot 5's headline turns into the result
   document.getElementById("s1-head").textContent = LANG === "zh" ? "赠岛 · Gift Islands" : "Gift Islands";
   document.getElementById("s6-pill").textContent = COPY.s6[0];
   document.getElementById("s6-sub").textContent = COPY.s6[1];
@@ -398,7 +399,7 @@
     const values = events.filter((e) => e.value != null);
     const previews = events.filter((e) => "preview" in e);
 
-    function render(t, { winnerDim = 0 } = {}) {
+    function render(t, { winnerDim = 0, winnerLit = 0 } = {}) {
       let on = null, off = null;
       for (const e of shows) if (t >= e.t) { if (e.show) { on = e.t; off = null; } else off = e.t; }
       riseOut(wrap, t, on, off, { dy: 18, blur: 10, dur: 0.6 });
@@ -417,7 +418,7 @@
       prev.style.transform = `translateY(${(-k * p).toFixed(2)}px)`;
       prev.style.opacity = (1 - p).toFixed(3);
       prev.style.filter = p < 1 ? `blur(${(8 * p).toFixed(2)}px)` : "none";
-      num.style.color = mix(PAL.ink, PAL.ink3, winnerDim);
+      num.style.color = winnerLit > 0 ? mix(PAL.ink, PAL.accent, winnerLit) : mix(PAL.ink, PAL.ink3, winnerDim);
       chip.style.opacity = (1 - 0.55 * winnerDim).toFixed(3);
 
       let pval = null, ptc = -1, pprev = null;
@@ -462,16 +463,21 @@
     titleBoard.render(t);
     riseOut(nodes.s1Head, t, CT.s1[0], null);
 
-    stage(nodes.gameStage, t, D.T.game[0], D.b(65.5));
+    stage(nodes.gameStage, t, D.T.game[0], CT.s5[2]);
     gameBoard.render(t);
     for (const s of shots) {
       const [hin, sin, out] = CT[s];
-      riseOut(document.getElementById(`${s}-head`), t, hin, out);
-      riseOut(document.getElementById(`${s}-sub`), t, sin, CT[s][3] ?? out);
+      riseOut(document.getElementById(`${s}-head`), t, hin, s === "s5" ? CT.s5[3] : out);
+      riseOut(document.getElementById(`${s}-sub`), t, sin, s === "s3" ? CT.s3[3] : out);
     }
     riseOut(document.getElementById("s3-sub2"), t, CT.s3[3], CT.s3[2]);
+    riseOut(document.getElementById("s5-head2"), t, CT.s5[3], CT.s5[2]);
     const winDim = ease(prog(t, D.winner.t, 0.5));
-    for (const { shot, color, c } of counters) c.render(t, { winnerDim: shot === "s5" && color !== D.winner.color ? winDim : 0 });
+    const winLit = ease(prog(t, D.winner.lit, 0.4));
+    for (const { shot, color, c } of counters) {
+      const s5 = shot === "s5";
+      c.render(t, { winnerDim: s5 && color !== D.winner.color ? winDim : 0, winnerLit: s5 && color === D.winner.color ? winLit : 0 });
+    }
 
     stage(nodes.s6Stage, t, D.T.s6[0], null);
     markBoard.render(t);
