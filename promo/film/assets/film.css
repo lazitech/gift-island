@@ -150,7 +150,8 @@
   letter-spacing: -0.005em;
  
 }
-#s6-sub { font-family: var(--body); color: var(--ink-2); }
+#s6-sub { font-family: var(--head); font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+#root.en #s6-sub { letter-spacing: -0.025em; }
 
 /* ---------- Landscape 1920 × 1080 ---------- */
 
@@ -163,9 +164,9 @@
 #root.landscape .chip { width: 56px; height: 56px; }
 #root.landscape .num { font-size: 104px; }
 #root.landscape .preview { font-size: 56px; }
-#root.landscape #s6-copy { top: 600px; }
+#root.landscape #s6-copy { top: 629px; }
 #root.landscape .pill { height: 104px; padding: 0 60px; border-radius: 52px; font-size: 46px; }
-#root.landscape #s6-sub { margin-top: 40px; font-size: 36px; }
+#root.landscape #s6-sub { margin-bottom: 40px; font-size: 56px; }
 
 /* ---------- Portrait 1080 × 1920 ---------- */
 
@@ -178,6 +179,6 @@
 #root.portrait .chip { width: 52px; height: 52px; }
 #root.portrait .num { font-size: 96px; }
 #root.portrait .preview { font-size: 52px; }
-#root.portrait #s6-copy { top: 960px; }
+#root.portrait #s6-copy { top: 1080px; }
 #root.portrait .pill { height: 112px; padding: 0 64px; border-radius: 56px; font-size: 50px; }
-#root.portrait #s6-sub { margin-top: 44px; font-size: 40px; }
+#root.portrait #s6-sub { margin-bottom: 44px; font-size: 60px; }

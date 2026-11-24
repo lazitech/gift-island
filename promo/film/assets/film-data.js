@@ -287,7 +287,7 @@
       s3: ["相连成岛。", "上下左右相连，/才算同一座岛。", "一岛一分，/不论大小。"],
       s4: ["送出的子，/也能连起对方的岛。", "送对位置，/对方反而少一座岛。"],
       s5: ["下满即止。", "岛多者胜。", "黑方胜。"],
-      s6: ["giftislands.top", "三档 AI，随时对弈"],
+      s6: ["giftislands.top", "有一座岛，在等你。"],
     },
     en: {
       s1: ["Gift Islands", ""],
@@ -295,7 +295,7 @@
       s3: ["Connected stones /make an island.", "Side by side connects. /Corner to corner doesn't.", "Every island scores one, /big or small."],
       s4: ["A gift can join /their islands.", "Give it in the right place, /and they lose one."],
       s5: ["Fill the board.", "Most islands wins.", "Black wins."],
-      s6: ["giftislands.top", "Three AI levels, any time."],
+      s6: ["giftislands.top", "There’s an island for you."],
     },
   };
 
@@ -306,7 +306,7 @@
     s3: [b(22.25), b(23.5), b(35.5), b(30)],
     s4: [b(36.25), b(46), b(51.5)],
     s5: [b(52.25), b(60.5), b(69.5), b(65.25)],
-    s6: [b(72), b(72.5), null],
+    s6: [b(73), b(72), null], // [button in, invitation in]: the line lands on the final chord, the button a beat later
   };
 
   // ---------------------------------------------------------------- harmony: one chord per bar

@@ -40,7 +40,7 @@
   try { vars = (window.__hyperframes && window.__hyperframes.getVariables && window.__hyperframes.getVariables()) || {}; } catch (e) { vars = {}; }
   const query = new URLSearchParams(location.search);
   const LANG = query.get("lang") || vars.lang || "zh";
-  const THEME = query.get("theme") || vars.theme || "dark";
+  const THEME = query.get("theme") || vars.theme || "light";
   const W = +root.dataset.width, H = +root.dataset.height;
   const PORTRAIT = H > W;
   root.classList.add(LANG, THEME, PORTRAIT ? "portrait" : "landscape");
@@ -300,8 +300,8 @@
     return { left, top, width: size, height: size, pad: size * 0.028, radius: size * 0.05 };
   }
   const LAYOUT = PORTRAIT
-    ? { title: titleBox(28, 560), game: squareBox(700, 190, 830), mark: titleBox(22, 500) }
-    : { title: titleBox(40, 150), game: squareBox(780, 210, 150), mark: titleBox(19, 200) };
+    ? { title: titleBox(28, 560), game: squareBox(700, 190, 830), mark: titleBox(22, 640) }
+    : { title: titleBox(40, 150), game: squareBox(780, 210, 150), mark: titleBox(19, 245) };
 
   // ------------------------------------------------------------------ boards
   const titleStones = (times) => D.title.stones.map(({ cell, color, stroke, k }) => {
