@@ -10,7 +10,7 @@
 | 3 | 岛怎么算 | 相连成岛。 | ① 上下左右相连，/才算同一座岛。<br>② 一岛一分，/不论大小。 | Connected stones / make an island. | ① Side by side connects. / Corner to corner doesn't.<br>② Every island scores one, / big or small. |
 | 4 | 送子连岛 | 送出的子，/也能连起对方的岛。 | 送对位置，/对方反而少一座岛。 | A gift can join / their islands. | Give it in the right place, / and they lose one. |
 | 5 | 终局 | 下满即止。→ 黑方胜。 | 岛多者胜。 | Fill the board. → Black wins. | Most islands wins. |
-| 6 | 片尾 | 有一座岛，在等你。 | （按钮）giftislands.top | There’s an island for you. | (button) giftislands.top |
+| 6 | 片尾 | （按钮）giftislands.top | 有一座岛，在等你。 | (button) giftislands.top | There’s an island for you. |
 
 ## 计数标签
 
@@ -25,5 +25,5 @@
 - 镜头 2 拆成主副两句：「一手，两子。」先立概念，「先下自己的，再送对方一枚。」再解释，并和画面上“先落己子、再落赠子”的顺序一致。
 - 镜头 3 加了「上下左右相连，才算同一座岛。」，配合斜连虚线和 ×，再接「一岛一分，不论大小。」。
 - 镜头 4 加了副句「送对位置，对方反而少一座岛。」——画面里先演示"送在角落 → 对方 +1"，再演示"送进缺口 → 对方 −1"，副句点明这是策略，不只是规则。
-- 镜头 6 先出一句邀请「有一座岛，在等你。」（一级文字色、Semibold），一拍后蓝色胶囊按钮弹出，按钮里是网址：视频里按钮不能点，网址就是行动本身。原来的「三档 AI，随时对弈」只是功能说明、没有号召力，已去掉。
+- 镜头 6 的网址放进蓝色胶囊按钮里（视频里按钮不能点，网址就是行动本身），下面一行二级文字是邀请「有一座岛，在等你。」，替换了原来只是功能说明的「三档 AI，随时对弈」。中文句尾的「。」右侧留白多，左侧补 0.6em 内边距，让字的墨迹在画面里正居中。
 - 不提 KataGo、棋盘尺寸、手数。

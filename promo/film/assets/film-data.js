@@ -306,7 +306,7 @@
     s3: [b(22.25), b(23.5), b(35.5), b(30)],
     s4: [b(36.25), b(46), b(51.5)],
     s5: [b(52.25), b(60.5), b(69.5), b(65.25)],
-    s6: [b(73), b(72), null], // [button in, invitation in]: the line lands on the final chord, the button a beat later
+    s6: [b(72), b(72.5), null], // [button in, invitation in]: the button lands on the final chord
   };
 
   // ---------------------------------------------------------------- harmony: one chord per bar
