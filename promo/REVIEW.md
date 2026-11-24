@@ -12,7 +12,10 @@
 | `giftislands-16x9-en-dark.mp4` | 主片 · 横屏 · 英文 · 深色 |
 | `giftislands-9x16-zh-dark.mp4` | 主片 · 竖屏 · 中文 · 深色 · 1080×1920 |
 | `giftislands-9x16-en-dark.mp4` | 主片 · 竖屏 · 英文 · 深色 |
-| `giftislands-16x9-zh-light.mp4` | 配色对比用的浅色版（横屏中文） |
+| `giftislands-16x9-zh-light.mp4` | 主片 · 横屏 · 中文 · 浅色 |
+| `giftislands-16x9-en-light.mp4` | 主片 · 横屏 · 英文 · 浅色 |
+| `giftislands-9x16-zh-light.mp4` | 主片 · 竖屏 · 中文 · 浅色 |
+| `giftislands-9x16-en-light.mp4` | 主片 · 竖屏 · 英文 · 浅色 |
 | `palette-compare.png` | 深色 / 浅色同一时刻并排对比 |
 | `brag-comparison-16x9-zh.mp4` | brag 对比片 · 20 s（封面帧、计划、分享文案在 `brag-output/`） |
 
