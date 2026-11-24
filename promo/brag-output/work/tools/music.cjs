@@ -83,7 +83,7 @@ for (let bar = 3; bar < 10; bar++) bass(bar * 2, roots[bar], bar === 7 ? 1.0 : 1
 for (let s = 0; s < 23; s++) mallet(bt(6) + 0.1 + s * 0.06, [65, 67, 69, 72, 74][s % 5] + 12 * Math.floor(s / 10), 0.35, -0.5 + s * 0.045, 0.6);
 // Game: self and gift stones.
 const pick = (t, i) => chordAt(t)[i % 4];
-for (let k = 0; k < 6; k++) { const t = bt(13 + k); mallet(t, pick(t, k), 0.75, -0.2); mallet(t + 0.3, pick(t, k + 2) + 12, 0.55, 0.25); }
+for (let k = 0; k < 6; k++) { const t = bt(13 + k); mallet(t, pick(t, k), 0.75, -0.2); mallet(t + 0.125, pick(t, k + 2) + 12, 0.55, 0.25); }
 for (let k = 6; k < 10; k++) { const t = bt(21 + 0.25 * (k - 6)); mallet(t, pick(t, k), 0.45, -0.2, 0.6); }
 [0, 1, 2].forEach((k) => mallet(bt(22.5 + 0.5 * k), [72, 74, 77][k], 0.7, 0.1));
 mallet(bt(24), 70, 0.7, -0.2);

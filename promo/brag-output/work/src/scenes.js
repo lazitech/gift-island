@@ -40,8 +40,8 @@
     placements.push({ cell: gift, color: 3 - color, land: t + gap, launch: t + gap, from: null });
     return t + gap;
   };
-  for (let k = 0; k < 6; k++) { const land = moveAt(k, bt(13 + k), 0.3); lastMarks.push({ t: land, cells: D.MOVES[k] }); }
-  for (let k = 6; k < 10; k++) moveAt(k, bt(21 + 0.25 * (k - 6)), 0.16);
+  for (let k = 0; k < 6; k++) { const land = moveAt(k, bt(13 + k), 0.125); lastMarks.push({ t: land, cells: D.MOVES[k] }); }
+  for (let k = 6; k < 10; k++) moveAt(k, bt(21 + 0.25 * (k - 6)), 1 / 30);
   lastMarks.push({ t: bt(21), cells: null });
   // white's three islands, then the gift in the gap
   const whiteIslands = [[21, 22, 23], [25, 26, 27], [40, 41, 47, 48]];

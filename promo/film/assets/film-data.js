@@ -178,11 +178,13 @@
   }
 
   // Shot 2: three moves at playing speed, then seven more, a half-beat each.
-  place(0, b(12), { marks: true });
-  place(1, b(14), { marks: true });
-  place(2, b(16), { marks: true });
+  // One move reads as one gesture: its two stones land a quarter beat apart (own stone first, the
+  // gift right after), and the moves themselves are two beats apart.
+  place(0, b(12), { gap: BEAT / 4, marks: true });
+  place(1, b(14), { gap: BEAT / 4, marks: true });
+  place(2, b(16), { gap: BEAT / 4, marks: true });
   lastMarks.push({ t: b(17.75), cells: null });
-  for (let k = 3; k < 10; k++) place(k, b(18 + 0.5 * (k - 3)), { gap: BEAT / 4, quiet: true });
+  for (let k = 3; k < 10; k++) place(k, b(18 + 0.5 * (k - 3)), { gap: 2 / 30, quiet: true }); // pairs, 2 frames apart
 
   // Shot 3: what an island is. Light each black island and leave a numbered badge on it.
   const mid = boardAfter(10);
@@ -250,7 +252,7 @@
   counters.push({ t: b(51.5), color: 1, hide: true });
 
   // Shot 5: thirteen moves fill the board, a half-beat each, then both sides are counted.
-  for (let k = 11; k < 24; k++) place(k, b(53 + 0.5 * (k - 11)), { gap: BEAT / 4, quiet: true });
+  for (let k = 11; k < 24; k++) place(k, b(53 + 0.5 * (k - 11)), { gap: 2 / 30, quiet: true });
   const final = boardAfter(24);
   const finalIslands = { 1: islandsOf(final, 1), 2: islandsOf(final, 2) };
   const holeRing = { cell: HOLE, t: b(60) };
